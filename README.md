@@ -3,8 +3,6 @@
 #### 介绍
 心境障碍（如抑郁症、双相情感障碍、焦虑症等）具有高度异质性和复杂性，传统干预手段（如药物治疗、心理治疗）常因个体差异导致效果不稳定。可解释性人工智能（Explainable AI, XAI）为解决这一问题提供了新思路，通过结合个性化医疗与透明化决策，提升干预方案的精准度和患者依从性。
 
-Disorders of the mood (such as depression, bipolar disorder, anxiety disorder, etc.) are highly heterogeneous and complex, and traditional intervention methods (such as drug treatment, psychotherapy) often have unstable effects due to individual differences. Explainable AI (XAI) provides new ideas to solve this problem, which improves the accuracy of intervention plans and patient compliance by combining personalized medical care with transparent decision-making.
-
 #### 软件架构
 软件架构说明
 
