@@ -1,0 +1,28 @@
+{
+  "name": "Jerry",
+  "slug": "jerry",
+  "created_at": "2026-09-27T00:00:00Z",
+  "updated_at": "2026-09-27T00:00:00Z",
+  "version": "v1",
+  "profile": {
+    "age": "18（美本申请季）",
+    "occupation": "学生 / 独立开发者",
+    "city": "广州",
+    "gender": "待补充",
+    "mbti": "E(I)NF(T)P（ENFP/INFP/ENTP/INTP，E/I 与 T/P 未确定）",
+    "zodiac": "待补充"
+  },
+  "tags": {
+    "personality": ["技术务实", "目标导向", "兴趣驱动"],
+    "lifestyle": ["户外旅行", "摄影记录", "持续学习AI"]
+  },
+  "impression": "正在准备美本申请的学生，也是把心理健康想法做成产品的独立开发者；喜欢用相机记录湖畔山水与家人同行的时刻，资料库里攒满 AI 与大模型文章，关注技术与人文关怀的交叉",
+  "memory_sources": [
+    "MoodHub 项目（JerryLin0922/MoodHub，React+Vite+Capacitor+Tailwind，双语README）",
+    "XAIMentalHealth 研究仓库（可解释AI × 心境障碍）",
+    "Canon 旅行照片 7 张（湖畔、栈道、远山、亲子合影）",
+    "Common App / UC App 文书素材与头脑风暴表（2024-2025 申请季）",
+    "IT 资料收藏（AI/大模型/OCR/跨境电商/自由贸易协定）"
+  ],
+  "corrections_count": 0
+}
