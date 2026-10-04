@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f6f4f0" />
+  <meta name="description" content="MoodHub Web —— 本地优先的心情、睡眠、心率与压力记录空间。数据只保存在你的设备浏览器里，从不上传。" />
+  <title>MoodHub Web · 本地心情与健康记录</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6f62'/%3E%3Cpath d='M7 19c3.2 0 3.2-6 6.4-6s3.2 6 6.4 6 3.6-3.4 4.8-4.6' stroke='%23ffffff' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主内容</a>
+
+  <div class="app" id="app" data-state="locked">
+
+    <!-- ================= 顶栏（桌面端） ================= -->
+    <header class="topbar" id="topbar" hidden>
+      <div class="topbar__brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="26" height="26"><rect width="32" height="32" rx="9" fill="var(--accent)"/><path d="M7 19c3.2 0 3.2-6 6.4-6s3.2 6 6.4 6 3.6-3.4 4.8-4.6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        </span>
+        <span class="topbar__title">MoodHub<span class="topbar__sub">Web</span></span>
+        <span class="badge badge--local" title="全部数据保存在本机 localStorage">本地存储</span>
+      </div>
+
+      <nav class="topnav" id="topnav" aria-label="主导航">
+        <button class="navbtn" type="button" data-route="dashboard">看板</button>
+        <button class="navbtn" type="button" data-route="records">记录</button>
+        <button class="navbtn" type="button" data-route="import">导入</button>
+        <button class="navbtn" type="button" data-route="qa">问答</button>
+        <button class="navbtn" type="button" data-route="companion">陪伴</button>
+        <button class="navbtn" type="button" data-route="models">模型</button>
+        <button class="navbtn" type="button" data-route="settings">设置</button>
+      </nav>
+
+      <div class="topbar__right">
+        <span class="chip" id="userChip"></span>
+        <button class="btn btn--ghost btn--sm" type="button" id="btnLock">锁定</button>
+      </div>
+    </header>
+
+    <!-- ================= 主内容 ================= -->
+    <main class="main" id="main">
+      <section class="view view--auth" id="view-auth" data-view="auth" aria-label="登录"></section>
+      <section class="view" id="view-dashboard" data-view="dashboard" hidden></section>
+      <section class="view" id="view-records" data-view="records" hidden></section>
+      <section class="view" id="view-import" data-view="import" hidden></section>
+      <section class="view" id="view-qa" data-view="qa" hidden></section>
+      <section class="view" id="view-companion" data-view="companion" hidden></section>
+      <section class="view" id="view-models" data-view="models" hidden></section>
+      <section class="view" id="view-settings" data-view="settings" hidden></section>
+    </main>
+
+    <!-- ================= 底部标签栏（移动端） ================= -->
+    <nav class="tabbar" id="tabbar" aria-label="底部导航" hidden>
+      <button class="tabbtn" type="button" data-route="dashboard">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span>看板</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="records">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span>记录</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="import">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span>导入</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="qa">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7v.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 17.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>问答</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="companion">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+        <span>陪伴</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="models">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 12h6m-3-3v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>模型</span>
+      </button>
+      <button class="tabbtn" type="button" data-route="settings">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span>设置</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ================= 记录编辑弹窗 ================= -->
+  <div class="modal" id="modalEditor" hidden>
+    <div class="modal__backdrop" data-close="1"></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+      <header class="modal__head">
+        <h2 class="modal__title" id="editorTitle">新增记录</h2>
+        <button class="iconbtn" type="button" data-close="1" aria-label="关闭">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <form class="form" id="editorForm" novalidate>
+        <div class="field">
+          <label class="label" for="fDate">日期</label>
+          <input class="input" type="date" id="fDate" name="date" required />
+          <p class="hint">同一天可以记多条，统计时按天取平均。</p>
+          <p class="error" id="err-date" hidden></p>
+        </div>
+
+        <div class="field">
+          <label class="label" for="fTime">时间 <span class="label__opt">选填</span></label>
+          <input class="input" type="time" id="fTime" name="time" />
+          <p class="error" id="err-time" hidden></p>
+        </div>
+
+        <div class="metrics-grid" id="metricFields"></div>
+
+        <div class="field">
+          <label class="label" for="fNote">备注 <span class="label__opt">选填，最多 500 字</span></label>
+          <textarea class="input textarea" id="fNote" name="note" rows="3" maxlength="500" placeholder="今天发生了什么？身体有什么感觉？"></textarea>
+          <p class="hint"><span id="noteCount">0</span>/500</p>
+          <p class="error" id="err-note" hidden></p>
+        </div>
+
+        <p class="form__summary" id="editorSummary" hidden></p>
+
+        <footer class="modal__foot">
+          <button class="btn btn--ghost" type="button" id="btnDeleteRecord" hidden>删除</button>
+          <span class="spacer"></span>
+          <button class="btn btn--ghost" type="button" data-close="1">取消</button>
+          <button class="btn btn--primary" type="submit" id="btnSaveRecord">保存记录</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 重新验证密码弹窗 ================= -->
+  <div class="modal" id="modalReauth" hidden>
+    <div class="modal__backdrop" data-reauth-close="1"></div>
+    <div class="modal__panel modal__panel--narrow" role="dialog" aria-modal="true" aria-labelledby="reauthTitle">
+      <header class="modal__head">
+        <h2 class="modal__title" id="reauthTitle">请重新输入密码</h2>
+      </header>
+      <div class="modal__body">
+        <p class="muted" id="reauthReason">这项操作涉及你的本地数据，需要先确认是你本人。</p>
+        <form id="reauthForm" class="form" novalidate>
+          <div class="field">
+            <label class="label" for="reauthPwd">密码</label>
+            <div class="input-wrap">
+              <input class="input" type="password" id="reauthPwd" autocomplete="current-password" required />
+              <button class="iconbtn iconbtn--in" type="button" id="reauthToggle" aria-label="显示密码">
+                <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>
+              </button>
+            </div>
+            <p class="error" id="reauthErr" hidden></p>
+          </div>
+          <footer class="modal__foot">
+            <span class="spacer"></span>
+            <button class="btn btn--ghost" type="button" data-reauth-close="1">取消</button>
+            <button class="btn btn--primary" type="submit">确认</button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 危机求助卡 ================= -->
+  <div class="modal" id="modalCrisis" hidden>
+    <div class="modal__backdrop" data-crisis-close="1"></div>
+    <div class="modal__panel modal__panel--narrow" role="dialog" aria-modal="true" aria-labelledby="crisisTitle">
+      <header class="modal__head">
+        <h2 class="modal__title" id="crisisTitle">先照顾好你的安全</h2>
+      </header>
+      <div class="modal__body">
+        <p>我只是一个本地记录工具，没法替代专业帮助。如果此刻你有伤害自己的念头，或正处于危险中，请立刻联系下面这些渠道——它们 24 小时都有人接。</p>
+        <ul class="res-list" id="crisisList"></ul>
+        <p class="muted small">紧急情况请直接拨打 110 / 120。</p>
+      </div>
+      <footer class="modal__foot">
+        <span class="spacer"></span>
+        <button class="btn btn--primary" type="button" data-crisis-close="1">我知道了</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= 通用确认弹窗 ================= -->
+  <div class="modal" id="modalConfirm" hidden>
+    <div class="modal__backdrop" data-confirm-close="1"></div>
+    <div class="modal__panel modal__panel--narrow" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <header class="modal__head">
+        <h2 class="modal__title" id="confirmTitle">确认操作</h2>
+      </header>
+      <div class="modal__body" id="confirmBody"></div>
+      <footer class="modal__foot">
+        <span class="spacer"></span>
+        <button class="btn btn--ghost" type="button" data-confirm-close="1">取消</button>
+        <button class="btn btn--primary" type="button" id="confirmOk">确认</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= 模型详情 ================= -->
+  <div class="modal" id="modalModel" hidden>
+    <div class="modal__backdrop" data-model-close="1"></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modelDetailTitle">
+      <header class="modal__head">
+        <h2 class="modal__title" id="modelDetailTitle">模型详情</h2>
+        <button class="iconbtn" type="button" data-model-close="1" aria-label="关闭详情">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <div class="modal__body" id="modelDetailBody"></div>
+      <footer class="modal__foot">
+        <span class="spacer"></span>
+        <button class="btn btn--ghost" type="button" data-model-close="1">关闭</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/core/util.js"></script>
+  <script src="js/core/crypto.js"></script>
+  <script src="js/core/store.js"></script>
+  <script src="js/core/metrics.js"></script>
+  <script src="js/core/stats.js"></script>
+  <script src="js/core/charts.js"></script>
+  <script src="js/core/ingest.js"></script>
+  <script src="js/core/health-import/zip.js"></script>
+  <script src="js/core/health-import/formats.js"></script>
+  <script src="js/core/health-import/vendors.js"></script>
+  <script src="js/core/health-import/pipeline.js"></script>
+  <script src="js/core/retriever.js"></script>
+  <script src="js/core/local-service.js"></script>
+  <script src="js/core/qa.js"></script>
+  <script src="js/core/models/registry.js"></script>
+  <script src="js/core/models/adapters.js"></script>
+  <script src="js/core/models/manager.js"></script>
+  <script src="js/views/auth.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/views/records.js"></script>
+  <script src="js/views/import.js"></script>
+  <script src="js/views/qa.js"></script>
+  <script src="js/views/companion.js"></script>
+  <script src="js/views/models.js"></script>
+  <script src="js/views/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
