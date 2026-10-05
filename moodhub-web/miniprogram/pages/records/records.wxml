@@ -1,0 +1,25 @@
+<view class="title">记录</view>
+<view class="sub">记录心情 / 睡眠 / 心率 / 压力。本地保存，可选加密同步到云端。</view>
+
+<view class="btn" bindtap="toggleForm" wx:if="{{!showForm}}">+ 新增记录</view>
+
+<view class="card" wx:if="{{showForm}}">
+  <picker mode="date" bindchange="onInput" data-k="date"><view class="input">日期：{{form.date || '选择日期'}}</view></picker>
+  <input class="input" placeholder="时间（选填）" data-k="time" value="{{form.time}}" bindinput="onInput" />
+  <input class="input" placeholder="心情 1-5" type="digit" data-k="mood" value="{{form.mood}}" bindinput="onInput" />
+  <input class="input" placeholder="睡眠(小时)" type="digit" data-k="sleep" value="{{form.sleep}}" bindinput="onInput" />
+  <input class="input" placeholder="心率(bpm)" type="digit" data-k="heartRate" value="{{form.heartRate}}" bindinput="onInput" />
+  <input class="input" placeholder="压力 0-10" type="digit" data-k="stress" value="{{form.stress}}" bindinput="onInput" />
+  <input class="input" placeholder="备注（选填）" data-k="note" value="{{form.note}}" bindinput="onInput" />
+  <view class="btn" bindtap="save">保存</view>
+  <view class="btn ghost" bindtap="toggleForm">取消</view>
+</view>
+
+<view class="card">
+  <view class="row" wx:for="{{list}}" wx:key="id">
+    <view>{{item.date}} <text class="muted">{{item.time}}</text>
+      <text class="muted"> · 心情 {{item.mood}} / 睡眠 {{item.sleep}} / 心率 {{item.heartRate}} / 压力 {{item.stress}}</text></view>
+    <view class="badge off" bindtap="remove" data-id="{{item.id}}">删除</view>
+  </view>
+  <view class="muted" wx:if="{{!list.length}}" style="padding:8px 14px">暂无记录</view>
+</view>

@@ -1,0 +1,25 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/dashboard/dashboard",
+    "pages/records/records",
+    "pages/settings/settings"
+  ],
+  "window": {
+    "navigationBarTitleText": "MoodHub",
+    "navigationBarBackgroundColor": "#2f6f62",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f6f4f0"
+  },
+  "tabBar": {
+    "color": "#8a8a8a",
+    "selectedColor": "#2f6f62",
+    "list": [
+      { "pagePath": "pages/dashboard/dashboard", "text": "看板" },
+      { "pagePath": "pages/records/records", "text": "记录" },
+      { "pagePath": "pages/settings/settings", "text": "设置" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

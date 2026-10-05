@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="模型">
+  <defs><filter id="f-models-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-models-hd)"/>
+  <path d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-models-hd)"/>
+  <circle cx="12" cy="12" r="2.2" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-models-hd)"/>
+</svg>

@@ -1,0 +1,13 @@
+page { background: #f6f4f0; color: #222; font-size: 15px; }
+.card { background: #fff; border-radius: 14px; padding: 18px; margin: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.title { font-size: 20px; font-weight: 700; color: #2f6f62; margin: 16px 14px 4px; }
+.sub { color: #888; margin: 0 14px 8px; font-size: 13px; }
+.btn { background: #2f6f62; color: #fff; border-radius: 10px; padding: 12px; text-align: center; margin: 10px 14px; }
+.btn.ghost { background: #eee; color: #333; }
+.input { border: 1px solid #ddd; border-radius: 10px; padding: 10px 12px; margin: 6px 14px; background: #fff; }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; border-bottom: 1px solid #f0f0f0; }
+.muted { color: #888; font-size: 13px; }
+.metric { display: inline-block; width: 46%; margin: 6px 2%; vertical-align: top; }
+.metric .v { font-size: 24px; font-weight: 700; color: #2f6f62; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e7f0ee; color: #2f6f62; font-size: 12px; }
+.badge.off { background: #eee; color: #888; }

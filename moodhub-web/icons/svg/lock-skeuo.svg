@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="安全锁">
+  <defs><linearGradient id="g-lock-skeuo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a6b62"/><stop offset="1" stop-color="#88948e"/></linearGradient><filter id="f-lock-sk" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.25"/></filter></defs>
+  <path d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z" fill="url(#g-lock-skeuo)" filter="url(#f-lock-sk)"/>
+  <path d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="14" r="1.4" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 15.2 V17.5" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

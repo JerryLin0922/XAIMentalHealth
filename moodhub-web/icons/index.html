@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoodHub 图标方案</title>
+<style>
+  :root{
+    --bg:#f6f4f0; --surface:#fff; --surface-2:#fbfaf7; --line:#e6e1d8;
+    --text:#1e2422; --muted:#78817c; --accent:#2f6f62; --accent-soft:#e6efec;
+    --radius:16px; --radius-sm:10px;
+    --font:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei UI","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);
+    background-image:radial-gradient(1200px 600px at 110% -10%,#eaf0ec 0%,rgba(234,240,236,0) 60%),
+      radial-gradient(900px 500px at -10% 110%,#f2ece4 0%,rgba(242,236,228,0) 55%);
+    line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+  /* 顶栏 */
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px}
+  .brand .mk{width:34px;height:34px}
+  .top .sub{color:var(--muted);font-weight:500;font-size:13px}
+  /* 控件 */
+  .controls{position:sticky;top:0;z-index:5;display:flex;gap:10px;flex-wrap:wrap;
+    padding:12px;margin:14px 0 26px;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(8px);
+    box-shadow:0 6px 24px -18px rgba(0,0,0,.4)}
+  .controls .grp{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .controls .lbl{font-size:12px;color:var(--muted);margin-right:2px}
+  .btn{border:1px solid var(--line);background:var(--surface);color:var(--text);
+    padding:7px 13px;border-radius:999px;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s}
+  .btn:hover{border-color:var(--accent)}
+  .btn.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* 区块 */
+  .block{margin:30px 0}
+  .block__h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .block__h h2{margin:0;font-size:18px}
+  .block__h p{margin:0;color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px}
+  .grid--sm{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+  .tile{margin:0;display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:16px 10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-sm);transition:.15s}
+  .tile:hover{transform:translateY(-2px);box-shadow:0 10px 28px -18px rgba(0,0,0,.5);border-color:var(--accent)}
+  .tile--sm{padding:12px 6px}
+  .tile figcaption{text-align:center;font-size:12px;color:var(--muted)}
+  .tile figcaption b{display:block;color:var(--text);font-size:13px;font-weight:600}
+  .tile figcaption span{font-family:ui-monospace,monospace;font-size:11px;opacity:.7}
+  .ic{width:48px;height:48px;display:block}
+  .tile--sm .ic{width:38px;height:38px}
+  /* 风格渲染（核心 CSS：同一几何，五种表达） */
+  .style-line .s-f,.style-line .s-l{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .style-flat .s-f{fill:var(--accent)}
+  .style-flat .s-l{fill:none;stroke:var(--detail,#fff);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .style-gradient .s-f{fill:url(#g-main)}
+  .style-gradient .s-l{fill:none;stroke:var(--detail,#fff);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .style-skeuo .s-f{fill:url(#g-main);filter:url(#f-shadow)}
+  .style-skeuo .s-l{fill:none;stroke:rgba(255,255,255,.85);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+  .style-hand .s-f,.style-hand .s-l{fill:none;stroke:var(--ink,#4a3b32);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:url(#f-hd)}
+  /* 配色方案：定义 --accent / --accent2 / --detail */
+  .scheme-bright .tile{--accent:var(--metric);--accent2:var(--metric2);--detail:#fff}
+  .scheme-dark .tile{--accent:var(--metric-dark);--accent2:var(--metric2);--detail:#10130f}
+  .scheme-contrast .tile{--accent:#14130f;--accent2:#14130f;--detail:#fff}
+  .scheme-brand .tile{--accent:#2f6f62;--accent2:#3d7a55;--detail:#fff}
+  /* 配色演示卡片 */
+  .schemes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .scheme-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .scheme-card h3{margin:0 0 10px;font-size:14px}
+  .scheme-bright{background:#f6f4f0}
+  .scheme-dark{background:#16181a}.scheme-dark h3{color:#e8eae8}
+  .scheme-contrast{background:#fff}
+  .scheme-brand{background:#f3efea}
+  .scheme-card .tile{border-color:transparent}
+  /* 缩放演示 */
+  .scale{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap;padding:20px;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+  .scale-cell{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+  .scale-cell .ic{--accent:var(--metric);--accent2:var(--metric2);width:var(--px);height:var(--px)}
+  /* 表格 / 说明 */
+  table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);overflow:hidden;font-size:14px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--surface-2);font-size:13px;color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--surface-2);padding:1px 6px;border-radius:6px;font-size:12px}
+  .muted{color:var(--muted)}
+  h1{font-size:26px;margin:6px 0 2px}
+  h2.sec{font-size:18px;margin:34px 0 12px}
+  .note{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+    color:var(--text);padding:12px 14px;border-radius:var(--radius-sm);font-size:13px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<!-- 隐藏的 SVG 精灵：渐变与滤镜定义 + 全部图标符号 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="g-main" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent2)"/></linearGradient>
+  <filter id="f-shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.25"/></filter>
+  <filter id="f-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter>
+</defs><symbol id="ic-logo" viewBox="0 0 24 24"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></symbol><symbol id="ic-mood" viewBox="0 0 24 24"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></symbol><symbol id="ic-sleep" viewBox="0 0 24 24"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></symbol><symbol id="ic-heart" viewBox="0 0 24 24"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></symbol><symbol id="ic-stress" viewBox="0 0 24 24"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></symbol><symbol id="ic-dashboard" viewBox="0 0 24 24"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></symbol><symbol id="ic-records" viewBox="0 0 24 24"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></symbol><symbol id="ic-import" viewBox="0 0 24 24"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></symbol><symbol id="ic-qa" viewBox="0 0 24 24"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></symbol><symbol id="ic-companion" viewBox="0 0 24 24"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></symbol><symbol id="ic-models" viewBox="0 0 24 24"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></symbol><symbol id="ic-settings" viewBox="0 0 24 24"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></symbol><symbol id="ic-lock" viewBox="0 0 24 24"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></symbol><symbol id="ic-add" viewBox="0 0 24 24"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></symbol></svg>
+
+<div class="wrap">
+  <div class="top">
+    <span class="brand">
+      <svg class="mk ic style-flat" viewBox="0 0 24 24" style="--metric:#2f6f62;--metric2:#3d7a55" aria-hidden="true">
+        <rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/>
+        <path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/>
+      </svg>
+      MoodHub 图标方案
+    </span>
+    <span class="sub">14 图标 × 5 风格 × 4 配色 · 矢量可缩放 · 完全离线自持</span>
+  </div>
+
+  <div class="controls">
+    <div class="grp"><span class="lbl">风格</span>
+      <button class="btn is-on" data-f="all">全部</button>
+      <button class="btn" data-f="line">极简线条</button>
+      <button class="btn" data-f="flat">扁平化</button>
+      <button class="btn" data-f="gradient">渐变</button>
+      <button class="btn" data-f="skeuo">拟物</button>
+      <button class="btn" data-f="hand">手绘</button>
+    </div>
+    <div class="grp"><span class="lbl">配色</span>
+      <button class="btn is-on" data-s="bright">明亮</button>
+      <button class="btn" data-s="dark">暗色</button>
+      <button class="btn" data-s="contrast">高对比</button>
+      <button class="btn" data-s="brand">品牌色系</button>
+    </div>
+  </div>
+
+  <div class="note">所有图标沿用 <code>moodhub-web</code> 现有品牌：低饱和松绿主色 <code>#2f6f62</code> + 暖纸感中性背景 + 四项指标既有配色。
+  同一套几何通过 CSS 渲染为 5 种风格，可随应用浅色 / 深色主题无缝切换。</div>
+
+  <h2 class="sec">风格画廊</h2>
+  <div id="gallery"><section class="block" data-style="line">
+    <header class="block__h"><h2>极简线条</h2><p>纯描边、无填充，最轻量，适合顶栏与高密度列表。</p></header>
+    <div class="grid"><figure class="tile" data-style="line" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg>
+      <figcaption><b>品牌标识</b><span>logo</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg>
+      <figcaption><b>心情</b><span>mood</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg>
+      <figcaption><b>睡眠</b><span>sleep</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg>
+      <figcaption><b>心率</b><span>heart</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg>
+      <figcaption><b>压力</b><span>stress</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg>
+      <figcaption><b>看板</b><span>dashboard</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#6f7d5a;--metric2:#97a188;--metric-dark:#838f71">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg>
+      <figcaption><b>记录</b><span>records</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#4f8a7b;--metric2:#80aba0;--metric-dark:#689a8d">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg>
+      <figcaption><b>导入</b><span>import</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#5a7d9a;--metric2:#88a1b6;--metric-dark:#718fa8">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg>
+      <figcaption><b>问答</b><span>qa</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg>
+      <figcaption><b>陪伴</b><span>companion</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#6b6256;--metric2:#948e85;--metric-dark:#80786e">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg>
+      <figcaption><b>模型</b><span>models</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#7a7066;--metric2:#9f9891;--metric-dark:#8d847b">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg>
+      <figcaption><b>设置</b><span>settings</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg>
+      <figcaption><b>安全锁</b><span>lock</span></figcaption>
+    </figure><figure class="tile" data-style="line" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-line" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg>
+      <figcaption><b>新增</b><span>add</span></figcaption>
+    </figure></div>
+  </section><section class="block" data-style="flat">
+    <header class="block__h"><h2>扁平化</h2><p>主体填色 + 白色细节线，双色扁平，最通用。</p></header>
+    <div class="grid"><figure class="tile" data-style="flat" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg>
+      <figcaption><b>品牌标识</b><span>logo</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg>
+      <figcaption><b>心情</b><span>mood</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg>
+      <figcaption><b>睡眠</b><span>sleep</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg>
+      <figcaption><b>心率</b><span>heart</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg>
+      <figcaption><b>压力</b><span>stress</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg>
+      <figcaption><b>看板</b><span>dashboard</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#6f7d5a;--metric2:#97a188;--metric-dark:#838f71">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg>
+      <figcaption><b>记录</b><span>records</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#4f8a7b;--metric2:#80aba0;--metric-dark:#689a8d">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg>
+      <figcaption><b>导入</b><span>import</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#5a7d9a;--metric2:#88a1b6;--metric-dark:#718fa8">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg>
+      <figcaption><b>问答</b><span>qa</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg>
+      <figcaption><b>陪伴</b><span>companion</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#6b6256;--metric2:#948e85;--metric-dark:#80786e">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg>
+      <figcaption><b>模型</b><span>models</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#7a7066;--metric2:#9f9891;--metric-dark:#8d847b">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg>
+      <figcaption><b>设置</b><span>settings</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg>
+      <figcaption><b>安全锁</b><span>lock</span></figcaption>
+    </figure><figure class="tile" data-style="flat" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg>
+      <figcaption><b>新增</b><span>add</span></figcaption>
+    </figure></div>
+  </section><section class="block" data-style="gradient">
+    <header class="block__h"><h2>渐变</h2><p>主体渐变填充，现代有层次，适合营销与启动页。</p></header>
+    <div class="grid"><figure class="tile" data-style="gradient" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg>
+      <figcaption><b>品牌标识</b><span>logo</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg>
+      <figcaption><b>心情</b><span>mood</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg>
+      <figcaption><b>睡眠</b><span>sleep</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg>
+      <figcaption><b>心率</b><span>heart</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg>
+      <figcaption><b>压力</b><span>stress</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg>
+      <figcaption><b>看板</b><span>dashboard</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#6f7d5a;--metric2:#97a188;--metric-dark:#838f71">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg>
+      <figcaption><b>记录</b><span>records</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#4f8a7b;--metric2:#80aba0;--metric-dark:#689a8d">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg>
+      <figcaption><b>导入</b><span>import</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#5a7d9a;--metric2:#88a1b6;--metric-dark:#718fa8">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg>
+      <figcaption><b>问答</b><span>qa</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg>
+      <figcaption><b>陪伴</b><span>companion</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#6b6256;--metric2:#948e85;--metric-dark:#80786e">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg>
+      <figcaption><b>模型</b><span>models</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#7a7066;--metric2:#9f9891;--metric-dark:#8d847b">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg>
+      <figcaption><b>设置</b><span>settings</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg>
+      <figcaption><b>安全锁</b><span>lock</span></figcaption>
+    </figure><figure class="tile" data-style="gradient" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-gradient" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg>
+      <figcaption><b>新增</b><span>add</span></figcaption>
+    </figure></div>
+  </section><section class="block" data-style="skeuo">
+    <header class="block__h"><h2>拟物</h2><p>渐变 + 投影 + 高光，立体质感，适合卡片主视觉。</p></header>
+    <div class="grid"><figure class="tile" data-style="skeuo" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg>
+      <figcaption><b>品牌标识</b><span>logo</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg>
+      <figcaption><b>心情</b><span>mood</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg>
+      <figcaption><b>睡眠</b><span>sleep</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg>
+      <figcaption><b>心率</b><span>heart</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg>
+      <figcaption><b>压力</b><span>stress</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg>
+      <figcaption><b>看板</b><span>dashboard</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#6f7d5a;--metric2:#97a188;--metric-dark:#838f71">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg>
+      <figcaption><b>记录</b><span>records</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#4f8a7b;--metric2:#80aba0;--metric-dark:#689a8d">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg>
+      <figcaption><b>导入</b><span>import</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#5a7d9a;--metric2:#88a1b6;--metric-dark:#718fa8">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg>
+      <figcaption><b>问答</b><span>qa</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg>
+      <figcaption><b>陪伴</b><span>companion</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#6b6256;--metric2:#948e85;--metric-dark:#80786e">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg>
+      <figcaption><b>模型</b><span>models</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#7a7066;--metric2:#9f9891;--metric-dark:#8d847b">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg>
+      <figcaption><b>设置</b><span>settings</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg>
+      <figcaption><b>安全锁</b><span>lock</span></figcaption>
+    </figure><figure class="tile" data-style="skeuo" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-skeuo" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg>
+      <figcaption><b>新增</b><span>add</span></figcaption>
+    </figure></div>
+  </section><section class="block" data-style="hand">
+    <header class="block__h"><h2>手绘</h2><p>抖动手绘描边（SVG 噪声滤镜），温暖亲和，适合陪伴场景。</p></header>
+    <div class="grid"><figure class="tile" data-style="hand" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg>
+      <figcaption><b>品牌标识</b><span>logo</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg>
+      <figcaption><b>心情</b><span>mood</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg>
+      <figcaption><b>睡眠</b><span>sleep</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg>
+      <figcaption><b>心率</b><span>heart</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg>
+      <figcaption><b>压力</b><span>stress</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg>
+      <figcaption><b>看板</b><span>dashboard</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#6f7d5a;--metric2:#97a188;--metric-dark:#838f71">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg>
+      <figcaption><b>记录</b><span>records</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#4f8a7b;--metric2:#80aba0;--metric-dark:#689a8d">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg>
+      <figcaption><b>导入</b><span>import</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#5a7d9a;--metric2:#88a1b6;--metric-dark:#718fa8">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg>
+      <figcaption><b>问答</b><span>qa</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg>
+      <figcaption><b>陪伴</b><span>companion</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#6b6256;--metric2:#948e85;--metric-dark:#80786e">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg>
+      <figcaption><b>模型</b><span>models</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#7a7066;--metric2:#9f9891;--metric-dark:#8d847b">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg>
+      <figcaption><b>设置</b><span>settings</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg>
+      <figcaption><b>安全锁</b><span>lock</span></figcaption>
+    </figure><figure class="tile" data-style="hand" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378">
+      <svg class="ic style-hand" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg>
+      <figcaption><b>新增</b><span>add</span></figcaption>
+    </figure></div>
+  </section></div>
+
+  <h2 class="sec">配色方案（同一扁平图标，四种语境）</h2>
+  <div class="schemes"><div class="scheme-card scheme-bright"><h3>明亮</h3><div class="grid grid--sm"><figure class="tile tile--sm" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><figcaption>品牌标识</figcaption></figure><figure class="tile tile--sm" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg><figcaption>心情</figcaption></figure><figure class="tile tile--sm" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg><figcaption>睡眠</figcaption></figure><figure class="tile tile--sm" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg><figcaption>心率</figcaption></figure><figure class="tile tile--sm" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg><figcaption>压力</figcaption></figure><figure class="tile tile--sm" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg><figcaption>看板</figcaption></figure><figure class="tile tile--sm" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg><figcaption>陪伴</figcaption></figure><figure class="tile tile--sm" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg><figcaption>安全锁</figcaption></figure></div></div><div class="scheme-card scheme-dark"><h3>暗色</h3><div class="grid grid--sm"><figure class="tile tile--sm" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><figcaption>品牌标识</figcaption></figure><figure class="tile tile--sm" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg><figcaption>心情</figcaption></figure><figure class="tile tile--sm" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg><figcaption>睡眠</figcaption></figure><figure class="tile tile--sm" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg><figcaption>心率</figcaption></figure><figure class="tile tile--sm" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg><figcaption>压力</figcaption></figure><figure class="tile tile--sm" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg><figcaption>看板</figcaption></figure><figure class="tile tile--sm" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg><figcaption>陪伴</figcaption></figure><figure class="tile tile--sm" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg><figcaption>安全锁</figcaption></figure></div></div><div class="scheme-card scheme-contrast"><h3>高对比</h3><div class="grid grid--sm"><figure class="tile tile--sm" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><figcaption>品牌标识</figcaption></figure><figure class="tile tile--sm" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg><figcaption>心情</figcaption></figure><figure class="tile tile--sm" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg><figcaption>睡眠</figcaption></figure><figure class="tile tile--sm" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg><figcaption>心率</figcaption></figure><figure class="tile tile--sm" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg><figcaption>压力</figcaption></figure><figure class="tile tile--sm" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg><figcaption>看板</figcaption></figure><figure class="tile tile--sm" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg><figcaption>陪伴</figcaption></figure><figure class="tile tile--sm" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg><figcaption>安全锁</figcaption></figure></div></div><div class="scheme-card scheme-brand"><h3>品牌色系</h3><div class="grid grid--sm"><figure class="tile tile--sm" style="--metric:#2f6f62;--metric2:#69978e;--metric-dark:#4c8378"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><figcaption>品牌标识</figcaption></figure><figure class="tile tile--sm" style="--metric:#c08540;--metric2:#d2a775;--metric-dark:#c9965b"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg><figcaption>心情</figcaption></figure><figure class="tile tile--sm" style="--metric:#57789c;--metric2:#869eb8;--metric-dark:#6f8baa"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg><figcaption>睡眠</figcaption></figure><figure class="tile tile--sm" style="--metric:#b8607a;--metric2:#cc8d9f;--metric-dark:#c2768d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg><figcaption>心率</figcaption></figure><figure class="tile tile--sm" style="--metric:#85789f;--metric2:#a79eba;--metric-dark:#968bac"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg><figcaption>压力</figcaption></figure><figure class="tile tile--sm" style="--metric:#3d7a55;--metric2:#739f85;--metric-dark:#588d6d"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg><figcaption>看板</figcaption></figure><figure class="tile tile--sm" style="--metric:#b86f8c;--metric2:#cc97ac;--metric-dark:#c2839c"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg><figcaption>陪伴</figcaption></figure><figure class="tile tile--sm" style="--metric:#5a6b62;--metric2:#88948e;--metric-dark:#718078"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg><figcaption>安全锁</figcaption></figure></div></div></div>
+
+  <h2 class="sec">缩放与可辨识度（16 → 96px）</h2>
+  <div class="scale" id="scale"><div class="scale-cell" style="--metric:#2f6f62;--metric2:#69978e"><svg class="ic style-flat" viewBox="0 0 24 24" style="width:16px;height:16px" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><span>16px</span></div><div class="scale-cell" style="--metric:#2f6f62;--metric2:#69978e"><svg class="ic style-flat" viewBox="0 0 24 24" style="width:24px;height:24px" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><span>24px</span></div><div class="scale-cell" style="--metric:#2f6f62;--metric2:#69978e"><svg class="ic style-flat" viewBox="0 0 24 24" style="width:40px;height:40px" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><span>40px</span></div><div class="scale-cell" style="--metric:#2f6f62;--metric2:#69978e"><svg class="ic style-flat" viewBox="0 0 24 24" style="width:64px;height:64px" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><span>64px</span></div><div class="scale-cell" style="--metric:#2f6f62;--metric2:#69978e"><svg class="ic style-flat" viewBox="0 0 24 24" style="width:96px;height:96px" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg><span>96px</span></div></div>
+
+  <h2 class="sec">图标清单与建议用法</h2>
+  <table>
+    <thead><tr><th>图标</th><th>名称</th><th>推荐场景</th><th>文件示例</th></tr></thead>
+    <tbody>
+      <tr><td><span style="--metric:#2f6f62;--metric2:#69978e;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="品牌标识"><rect class="s-f" x="2" y="2" width="20" height="20" rx="6"/><path class="s-l" d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5"/></svg></span></td>
+        <td><b>品牌标识</b></td><td class="muted">顶栏 Logo、Favicon、启动页</td>
+        <td><code>svg/logo-flat.svg</code></td></tr><tr><td><span style="--metric:#c08540;--metric2:#d2a775;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心情"><circle class="s-f" cx="12" cy="12" r="9"/><circle class="s-l" cx="9" cy="10" r="1"/><circle class="s-l" cx="15" cy="10" r="1"/><path class="s-l" d="M8.5 14.5 Q12 18 15.5 14.5"/></svg></span></td>
+        <td><b>心情</b></td><td class="muted">指标卡 / 筛选 / 备注情绪</td>
+        <td><code>svg/mood-flat.svg</code></td></tr><tr><td><span style="--metric:#57789c;--metric2:#869eb8;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="睡眠"><path class="s-f" d="M20 14.5 A8 8 0 1 1 10.6 4 A6 6 0 1 0 20 14.5 Z"/><path class="s-l" d="M13.5 3 H16.5 L13.5 6 H16.5"/><path class="s-l" d="M16 6 H19 L16 9 H19"/></svg></span></td>
+        <td><b>睡眠</b></td><td class="muted">指标卡 / 睡眠时长</td>
+        <td><code>svg/sleep-flat.svg</code></td></tr><tr><td><span style="--metric:#b8607a;--metric2:#cc8d9f;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="心率"><path class="s-f" d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z"/><path class="s-l" d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21"/></svg></span></td>
+        <td><b>心率</b></td><td class="muted">指标卡 / 心率 bpm</td>
+        <td><code>svg/heart-flat.svg</code></td></tr><tr><td><span style="--metric:#85789f;--metric2:#a79eba;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="压力"><path class="s-f" d="M4.5 18 A7.5 7.5 0 0 1 19.5 18 Z"/><path class="s-l" d="M12 18 L16.5 9"/><circle class="s-l" cx="12" cy="18" r="1.1"/></svg></span></td>
+        <td><b>压力</b></td><td class="muted">指标卡 / 压力值</td>
+        <td><code>svg/stress-flat.svg</code></td></tr><tr><td><span style="--metric:#3d7a55;--metric2:#739f85;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="看板"><rect class="s-f" x="3" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="3" y="13" width="7.5" height="7.5" rx="1.8"/><rect class="s-f" x="13.5" y="13" width="7.5" height="7.5" rx="1.8"/></svg></span></td>
+        <td><b>看板</b></td><td class="muted">主导航 · 仪表盘</td>
+        <td><code>svg/dashboard-flat.svg</code></td></tr><tr><td><span style="--metric:#6f7d5a;--metric2:#97a188;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="记录"><rect class="s-f" x="3" y="3" width="18" height="18" rx="3"/><path class="s-l" d="M7 9 H17"/><path class="s-l" d="M7 12.5 H17"/><path class="s-l" d="M7 16 H14"/></svg></span></td>
+        <td><b>记录</b></td><td class="muted">主导航 · 列表管理</td>
+        <td><code>svg/records-flat.svg</code></td></tr><tr><td><span style="--metric:#4f8a7b;--metric2:#80aba0;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="导入"><path class="s-f" d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z"/><path class="s-l" d="M12 3 V12.5"/><path class="s-l" d="M8.5 9 L12 12.5 L15.5 9"/></svg></span></td>
+        <td><b>导入</b></td><td class="muted">主导航 · 第三方数据</td>
+        <td><code>svg/import-flat.svg</code></td></tr><tr><td><span style="--metric:#5a7d9a;--metric2:#88a1b6;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="问答"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4"/><circle class="s-l" cx="11.4" cy="13.6" r="0.5"/></svg></span></td>
+        <td><b>问答</b></td><td class="muted">主导航 · 智能问答</td>
+        <td><code>svg/qa-flat.svg</code></td></tr><tr><td><span style="--metric:#b86f8c;--metric2:#cc97ac;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="陪伴"><path class="s-f" d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z"/><path class="s-l" d="M12 13.2 C12 13.2 9.2 11.3 9.2 9.7 A1.5 1.5 0 0 1 12 9.7 A1.5 1.5 0 0 1 14.8 9.7 C14.8 11.3 12 13.2 12 13.2 Z"/></svg></span></td>
+        <td><b>陪伴</b></td><td class="muted">主导航 · 树洞陪伴</td>
+        <td><code>svg/companion-flat.svg</code></td></tr><tr><td><span style="--metric:#6b6256;--metric2:#948e85;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="模型"><rect class="s-f" x="7" y="7" width="10" height="10" rx="2"/><path class="s-l" d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20"/><circle class="s-l" cx="12" cy="12" r="2.2"/></svg></span></td>
+        <td><b>模型</b></td><td class="muted">主导航 · 模型管理</td>
+        <td><code>svg/models-flat.svg</code></td></tr><tr><td><span style="--metric:#7a7066;--metric2:#9f9891;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="设置"><path class="s-l" d="M5 7 H19 M5 12 H19 M5 17 H19"/><circle class="s-f" cx="9" cy="7" r="2"/><circle class="s-f" cx="15" cy="12" r="2"/><circle class="s-f" cx="8" cy="17" r="2"/></svg></span></td>
+        <td><b>设置</b></td><td class="muted">主导航 · 偏好 / 外观</td>
+        <td><code>svg/settings-flat.svg</code></td></tr><tr><td><span style="--metric:#5a6b62;--metric2:#88948e;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="安全锁"><path class="s-f" d="M5.5 10.5 H18.5 V18.5 A2 2 0 0 1 16.5 20.5 H7.5 A2 2 0 0 1 5.5 18.5 Z"/><path class="s-l" d="M8.5 10.5 V8 A3.5 3.5 0 0 1 15.5 8 V10.5"/><circle class="s-l" cx="12" cy="14" r="1.4"/><path class="s-l" d="M12 15.2 V17.5"/></svg></span></td>
+        <td><b>安全锁</b></td><td class="muted">登录 / 锁定 / 信任设备</td>
+        <td><code>svg/lock-flat.svg</code></td></tr><tr><td><span style="--metric:#2f6f62;--metric2:#69978e;display:inline-flex;vertical-align:middle"><svg class="ic style-flat" viewBox="0 0 24 24" role="img" aria-label="新增"><circle class="s-f" cx="12" cy="12" r="10"/><path class="s-l" d="M12 7 V17"/><path class="s-l" d="M7 12 H17"/></svg></span></td>
+        <td><b>新增</b></td><td class="muted">悬浮按钮 / 新增记录</td>
+        <td><code>svg/add-flat.svg</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">平台使用建议</h2>
+  <table>
+    <thead><tr><th>环境</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr><td><b>网站</b></td><td class="muted">直接 <code>&lt;img src="svg/..."&gt;</code> 或内联；顶栏用 line / flat，卡片主视觉用 gradient / skeuo。Favicon 用 <code>logo-flat.svg</code>（已对齐现有 favicon）。</td></tr>
+      <tr><td><b>移动 App / 小程序</b></td><td class="muted">SVG 矢量按需缩放；底部标签栏用 line（24px），悬浮「新增」用 <code>add-flat.svg</code>。iOS 可导出 @2x/@3x PNG，Android 用 adaptive-icon 前景。</td></tr>
+      <tr><td><b>桌面端</b></td><td class="muted">菜单 / 工具栏统一 line 风格；窗口图标与关于页用 skeuo / gradient 增强质感。</td></tr>
+      <tr><td><b>社交媒体</b></td><td class="muted">头像 / 封面用 <code>logo-gradient.svg</code> 或 <code>logo-skeuo.svg</code>；圆形头像建议 <code>add</code> / <code>logo</code> 置于圆底。</td></tr>
+      <tr><td><b>深色模式</b></td><td class="muted">切换 <code>data-theme="dark"</code> 即可；几何不变，仅填充色随 --accent 自动反相提亮。</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">二次定制</h2>
+  <p class="muted">每个独立 SVG 已内联颜色，可直接编辑；展示页中的图标通过 CSS 变量 <code>--accent / --accent2 / --detail</code> 着色，
+  改一处即可全局换色。手绘风格由 SVG <code>feTurbulence</code> 滤镜实现，调 <code>baseFrequency</code>（抖动频率）与 <code>scale</code>（抖动幅度）即可改变手绘感。</p>
+</div>
+
+<script>
+  var fBtns = document.querySelectorAll('[data-f]');
+  var sBtns = document.querySelectorAll('[data-s]');
+  fBtns.forEach(function(b){ b.addEventListener('click', function(){
+    fBtns.forEach(function(x){x.classList.remove('is-on')}); b.classList.add('is-on');
+    var f = b.getAttribute('data-f');
+    document.querySelectorAll('#gallery .block').forEach(function(sec){
+      sec.style.display = (f === 'all' || sec.getAttribute('data-style') === f) ? '' : 'none';
+    });
+  });});
+  sBtns.forEach(function(b){ b.addEventListener('click', function(){
+    sBtns.forEach(function(x){x.classList.remove('is-on')}); b.classList.add('is-on');
+    var s = b.getAttribute('data-s');
+    document.querySelectorAll('#gallery .tile').forEach(function(t){
+      t.className = t.className.replace(/scheme-\w+/g,'').trim();
+      t.classList.add('scheme-' + s);
+    });
+    document.querySelectorAll('.scheme-card').forEach(function(c){
+      c.className = c.className.replace(/scheme-\w+/g,'').trim();
+      c.classList.add('scheme-' + s);
+    });
+  });});
+  // 默认应用明亮方案
+  document.querySelectorAll('#gallery .tile').forEach(function(t){ t.classList.add('scheme-bright'); });
+</script>
+</body>
+</html>

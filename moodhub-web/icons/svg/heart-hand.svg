@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="心率">
+  <defs><filter id="f-heart-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <path d="M12 20.5 C12 20.5 4 14.4 4 8.6 A4.2 4.2 0 0 1 12 5.8 A4.2 4.2 0 0 1 20 8.6 C20 14.4 12 20.5 12 20.5 Z" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-heart-hd)"/>
+  <path d="M3 12 H7.3 L9.3 7.8 L11.8 16 L14 12 H21" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-heart-hd)"/>
+</svg>

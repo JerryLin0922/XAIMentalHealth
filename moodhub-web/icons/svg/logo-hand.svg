@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="品牌标识">
+  <defs><filter id="f-logo-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-logo-hd)"/>
+  <path d="M5.3 14.3c2.4 0 2.4-4.5 4.8-4.5s2.4 4.5 4.8 4.5 2.7-2.6 3.6-3.5" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-logo-hd)"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="记录">
+  <defs><filter id="f-records-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-records-hd)"/>
+  <path d="M7 9 H17" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-records-hd)"/>
+  <path d="M7 12.5 H17" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-records-hd)"/>
+  <path d="M7 16 H14" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-records-hd)"/>
+</svg>

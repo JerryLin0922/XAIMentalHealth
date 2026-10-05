@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="看板">
+  <defs><linearGradient id="g-dashboard-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3d7a55"/><stop offset="1" stop-color="#739f85"/></linearGradient></defs>
+  <rect x="3" y="3.5" width="7.5" height="7.5" rx="1.8" fill="url(#g-dashboard-gradient)"/>
+  <rect x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8" fill="url(#g-dashboard-gradient)"/>
+  <rect x="3" y="13" width="7.5" height="7.5" rx="1.8" fill="url(#g-dashboard-gradient)"/>
+  <rect x="13.5" y="13" width="7.5" height="7.5" rx="1.8" fill="url(#g-dashboard-gradient)"/>
+</svg>

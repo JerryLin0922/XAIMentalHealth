@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="问答">
+  <defs><linearGradient id="g-qa-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a7d9a"/><stop offset="1" stop-color="#88a1b6"/></linearGradient></defs>
+  <path d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z" fill="url(#g-qa-gradient)"/>
+  <path d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="11.4" cy="13.6" r="0.5" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

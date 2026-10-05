@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="导入">
+  <defs><filter id="f-import-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <path d="M3 13 H21 L19 18.5 A2 2 0 0 1 17 20 H7 A2 2 0 0 1 5 18.5 Z" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-import-hd)"/>
+  <path d="M12 3 V12.5" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-import-hd)"/>
+  <path d="M8.5 9 L12 12.5 L15.5 9" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-import-hd)"/>
+</svg>

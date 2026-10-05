@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="看板">
+  <rect x="3" y="3.5" width="7.5" height="7.5" rx="1.8" fill="#3d7a55"/>
+  <rect x="13.5" y="3.5" width="7.5" height="7.5" rx="1.8" fill="#3d7a55"/>
+  <rect x="3" y="13" width="7.5" height="7.5" rx="1.8" fill="#3d7a55"/>
+  <rect x="13.5" y="13" width="7.5" height="7.5" rx="1.8" fill="#3d7a55"/>
+</svg>

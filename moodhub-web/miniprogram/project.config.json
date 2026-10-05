@@ -1,0 +1,16 @@
+{
+  "description": "MoodHub 微信小程序",
+  "packOptions": { "ignore": [] },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.0.0",
+  "appid": "touristappid",
+  "projectname": "moodhub-miniprogram",
+  "condition": {}
+}

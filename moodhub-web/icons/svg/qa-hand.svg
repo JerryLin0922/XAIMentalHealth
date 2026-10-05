@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="问答">
+  <defs><filter id="f-qa-hd" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs>
+  <path d="M4 5 H20 V15 H12.5 L8 19 V15 H4 Z" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-qa-hd)"/>
+  <path d="M9.8 9.4 a1.5 1.5 0 1 1 2.4 1.2 c-.6 .5 -1.2 .6 -1.2 1.4" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-qa-hd)"/>
+  <circle cx="11.4" cy="13.6" r="0.5" fill="none" stroke="#4a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#f-qa-hd)"/>
+</svg>

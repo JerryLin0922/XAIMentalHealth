@@ -1,0 +1,2 @@
+/* 复用 app.wxss 的通用类，这里仅补充间距 */
+.title { margin-top: 40px; }

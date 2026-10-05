@@ -1,0 +1,25 @@
+<view class="title">设置</view>
+
+<view class="card">
+  <view class="row"><view>云端同步</view><view><text class="badge {{loggedIn ? '' : 'off'}}">{{loggedIn ? '已连接 · ' + user : '仅本机'}}</text></view></view>
+</view>
+
+<view class="card" wx:if="{{!loggedIn}}">
+  <view class="muted">尚未登录云端。点此前往登录 / 注册（启用端到端加密同步）。</view>
+  <view class="btn" bindtap="goLogin">登录 / 注册云端</view>
+</view>
+
+<view class="card" wx:else>
+  <view class="btn ghost" bindtap="push">上传到云端（加密）</view>
+  <view class="btn ghost" bindtap="pull">从云端恢复</view>
+  <view class="btn" bindtap="logout">退出云登录</view>
+</view>
+
+<view class="title" style="font-size:16px">后端地址</view>
+<view class="card">
+  <input class="input" placeholder="https://your-worker.workers.dev" value="{{base}}" bindinput="onBase" />
+  <view class="btn ghost" bindtap="saveBase">保存</view>
+</view>
+
+<view class="sub" style="margin:8px 14px">{{note}}</view>
+<view class="sub" style="margin:8px 14px">本机记录数：本地存储，加密后方可被服务端读取。</view>

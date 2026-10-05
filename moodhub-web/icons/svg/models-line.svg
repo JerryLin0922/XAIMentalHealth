@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" role="img" aria-label="模型">
+  <rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="#6b6256" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 4 V7 M12 17 V20 M4 12 H7 M17 12 H20" fill="none" stroke="#6b6256" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="12" r="2.2" fill="none" stroke="#6b6256" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
