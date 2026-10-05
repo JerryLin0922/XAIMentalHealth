@@ -1,0 +1,7 @@
+{
+  "name": "moodhub-miniprogram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MoodHub 微信小程序端（CommonJS 模块，供微信开发者工具与 Node 冒烟测试使用）",
+  "type": "commonjs"
+}

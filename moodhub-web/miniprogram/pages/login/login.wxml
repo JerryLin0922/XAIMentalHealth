@@ -1,13 +1,17 @@
 <view class="title">MoodHub</view>
-<view class="sub">端到端加密的心情与健康记录。数据只在你设备本地解密。</view>
+<view class="sub">心情 / 睡眠 / 心率 / 压力，一起看。数据只在你设备本地解密。</view>
 
 <view class="card">
   <input class="input" placeholder="云端用户名" data-k="username" value="{{username}}" bindinput="onInput" />
   <input class="input" placeholder="云端密码（≥6 位）" password data-k="password" value="{{password}}" bindinput="onInput" />
-  <view wx:if="{{err}}" class="sub" style="color:#c0392b">{{err}}</view>
+  <view class="sub" style="color:#b3474a;margin:0 0 8px" wx:if="{{err}}">{{err}}</view>
   <view class="btn" bindtap="doRegister" wx:if="{{!busy}}">注册并启用云端同步</view>
   <view class="btn ghost" bindtap="doLogin" wx:if="{{!busy}}">登录已有账户</view>
   <view class="btn" wx:if="{{busy}}">处理中…</view>
 </view>
 
-<view class="sub" style="margin-top:8px">未启用云端时，数据仅保存在本机微信存储中。</view>
+<view class="btn ghost" bindtap="localOnly">先不上云，仅本机使用</view>
+
+<view class="sub" style="margin-top:10px">
+  云端同步是可选项。不登录时，全部数据只保存在本机微信存储；登录后走端到端加密，服务端只存密文。
+</view>

@@ -1,18 +1,38 @@
-<view class="title">心情看板</view>
-<view class="sub">四项指标近期均值 · 共 {{count}} 条记录</view>
+<view class="title">看板</view>
+<view class="sub">最近 {{days}} 天 · {{coverage}} 的天数有记录 · 共 {{count}} 条</view>
 
-<view class="card">
-  <view class="metric"><view class="muted">心情</view><view class="v">{{mood}}</view></view>
-  <view class="metric"><view class="muted">睡眠(h)</view><view class="v">{{sleep}}</view></view>
-  <view class="metric"><view class="muted">心率(bpm)</view><view class="v">{{hr}}</view></view>
-  <view class="metric"><view class="muted">压力</view><view class="v">{{stress}}</view></view>
+<view class="seg">
+  <view class="seg-item {{days === d ? 'on' : ''}}" wx:for="{{ranges}}" wx:key="*this" wx:for-item="d"
+        data-d="{{d}}" bindtap="switchRange">{{d}} 天</view>
 </view>
 
-<view class="title" style="font-size:16px">最近记录</view>
+<view class="card" wx:for="{{cards}}" wx:key="key">
+  <view class="row">
+    <view>
+      <view class="muted">{{item.label}}</view>
+      <view class="v">{{item.mean}} <text class="unit">{{item.unit}}</text></view>
+    </view>
+    <view class="badge {{item.improve}}">{{item.perWeek || '持平'}}</view>
+  </view>
+  <view class="row sub" style="margin:6px 0 0">
+    <text>范围 {{item.range}}</text><text>最近 {{item.latest}} {{item.unit}}</text>
+  </view>
+</view>
+
+<view class="card">
+  <view class="seg">
+    <view class="seg-item {{chart.key === m.key ? 'on' : ''}}" wx:for="{{metrics}}" wx:key="key" wx:for-item="m"
+          data-k="{{m.key}}" bindtap="switchMetric">{{m.label}}</view>
+  </view>
+  <view class="sub" style="margin:4px 0 8px">{{chart.title}}（{{chart.min}}–{{chart.max}} {{chart.unit}}）</view>
+  <line-chart points="{{chart.points}}" color="{{chart.color}}" min="{{chart.min}}" max="{{chart.max}}" unit="{{chart.unit}}" height="160" />
+</view>
+
+<view class="title" style="font-size:16px">最近 5 条</view>
 <view class="card" wx:if="{{recent.length}}">
-  <view class="row" wx:for="{{recent}}" wx:key="id">
-    <view>{{item.date}} <text class="muted">{{item.time}}</text></view>
-    <view class="muted">心情 {{item.mood}} · 睡眠 {{item.sleep}}</view>
+  <view class="row" wx:for="{{recent}}" wx:key="id" data-id="{{item.id}}" bindtap="openRecent">
+    <view>{{item.date}}</view>
+    <view class="muted" style="text-align:right;max-width:60%">{{item.text}}</view>
   </view>
 </view>
 <view class="card" wx:else><view class="muted">还没有记录，去「记录」添加第一条吧。</view></view>

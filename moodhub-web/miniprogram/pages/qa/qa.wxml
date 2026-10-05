@@ -1,0 +1,60 @@
+<view class="title">问答</view>
+<view class="sub">先选数据源，再提问。回答由本机检索与统计生成，默认不联网。</view>
+
+<view class="card">
+  <view class="row">
+    <view style="flex:1">
+      <view>本机健康记录</view>
+      <view class="muted">最近 14 天聚合摘要，不含单条记录</view>
+    </view>
+    <switch checked="{{selection.health}}" color="#2f6f62" bindchange="toggleHealth" />
+  </view>
+</view>
+
+<view class="card">
+  <view class="row">
+    <text>文件来源（{{sources.length}}）</text>
+    <view class="badge" bindtap="pickFile">+ 从聊天记录选文件</view>
+  </view>
+  <view class="muted" wx:if="{{!sources.length}}" style="padding:8px 0">
+    支持 CSV / TSV / JSON / 文本。会话内解析，不落盘、不上传。
+  </view>
+  <view class="row" wx:for="{{sources}}" wx:key="id">
+    <view style="flex:1">
+      <view>{{item.name}}</view>
+      <view class="muted">{{item.kind}} · {{item.size}} 字符</view>
+    </view>
+    <switch checked="{{selection.files.indexOf(item.id) >= 0}}" color="#2f6f62" data-id="{{item.id}}" bindchange="toggleSource" />
+    <view class="badge off" style="margin-left:10px" data-id="{{item.id}}" bindtap="removeSource">移除</view>
+  </view>
+</view>
+
+<view class="card">
+  <textarea class="ta" value="{{question}}" maxlength="1000" auto-height
+            placeholder="例如：最近两周我的睡眠和心情有什么关系？" bindinput="onQuestion" />
+  <view class="btn" bindtap="ask">{{busy ? '分析中…' : '提问'}}</view>
+</view>
+
+<view class="card" wx:if="{{answer}}">
+  <view class="row">
+    <view class="badge">{{answer.mode === 'crisis' ? '安全优先' : (answer.mode === 'local' ? '本机生成' : answer.mode)}}</view>
+  </view>
+  <view style="margin-top:10px" user-select>{{answer.answer}}</view>
+
+  <view wx:if="{{answer.citations && answer.citations.length}}">
+    <view class="title" style="font-size:14px;margin-top:14px">引用</view>
+    <view class="muted" wx:for="{{answer.citations}}" wx:key="index" style="margin:6px 0">
+      「{{item.quote}}」 — {{item.sourceName}}（相关度 {{item.score}}）
+    </view>
+  </view>
+
+  <view class="row" style="margin-top:12px" bindtap="toggleContext">
+    <text class="muted">查看本次组装的上下文</text>
+    <text class="muted">{{showContext ? '收起' : '展开'}}</text>
+  </view>
+  <view wx:if="{{showContext}}" class="muted" style="margin-top:8px">
+    <text user-select>{{answer.context.text}}</text>
+  </view>
+
+  <view class="btn ghost" style="margin-top:10px" bindtap="copyAnswer">复制回答</view>
+</view>

@@ -1,0 +1,43 @@
+appId: com.moodhub.desktop
+productName: MoodHub
+copyright: MIT License
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - main.js
+  - preload.js
+  - package.json
+  - www/**/*
+  - build/icon.png
+
+# 页面本身零依赖，不需要 node_modules
+nodeGypRebuild: false
+npmRebuild: false
+
+asar: true
+compression: maximum
+
+win:
+  icon: build/icon.ico
+  artifactName: MoodHub-${version}-${arch}-Setup.${ext}
+  requestedExecutionLevel: asInvoker
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+portable:
+  artifactName: MoodHub-${version}-${arch}-Portable.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: MoodHub
+  deleteAppDataOnUninstall: false

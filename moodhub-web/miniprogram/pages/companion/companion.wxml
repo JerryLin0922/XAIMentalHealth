@@ -1,0 +1,35 @@
+<view class="title">陪伴</view>
+<view class="sub">本页进程内的规则引擎，无网络出口；只把最近 14 天的统计摘要交给你看到的本地服务。</view>
+
+<scroll-view scroll-y class="msgs" scroll-into-view="m{{list.length}}">
+  <view class="card" wx:if="{{!list.length}}">
+    <view class="muted">想聊什么都行。我不会评判你，也不会把这些话传到任何地方。</view>
+  </view>
+
+  <view class="bubble {{item.role === 'me' ? 'me' : 'ai'}}" wx:for="{{list}}" wx:key="id" id="m{{index}}">
+    <view wx:if="{{item.role === 'ai'}}" class="muted" style="font-size:11px;margin-bottom:4px">
+      本地服务 · {{item.tags && item.tags.length ? item.tags.join(' / ') : ''}}
+    </view>
+    <text user-select>{{item.text}}</text>
+  </view>
+
+  <view class="card" wx:if="{{sending}}"><view class="muted">正在回应…</view></view>
+</scroll-view>
+
+<view class="card" wx:if="{{lastPayload}}">
+  <view class="row" bindtap="togglePayload">
+    <text class="muted">查看本次发送给本地服务的内容</text>
+    <text class="muted">{{showPayload ? '收起' : '展开'}}</text>
+  </view>
+  <view wx:if="{{showPayload}}" class="muted" style="margin-top:8px">
+    <text user-select>{{lastPayload.summary.schema}} · 区间 {{lastPayload.summary.from}} ~ {{lastPayload.summary.to}} · 含 {{lastPayload.summary.entryCount}} 条聚合值，不含任何单条记录或备注原文。</text>
+    <view class="btn ghost" style="margin:10px 0 0" bindtap="copyPayload">复制完整 JSON</view>
+  </view>
+</view>
+
+<view class="inputbar">
+  <input class="chat-input" value="{{input}}" bindinput="onInput" placeholder="说说今天的感受…"
+         confirm-type="send" bindconfirm="send" />
+  <view class="send {{sending ? 'dis' : ''}}" bindtap="send">发送</view>
+</view>
+<view class="btn ghost" bindtap="clear">清空对话</view>

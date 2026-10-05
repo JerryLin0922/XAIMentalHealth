@@ -1,0 +1,3 @@
+<view class="lc-wrap" style="height: {{height}}px">
+  <canvas class="lc-canvas" type="2d" canvas-id="{{canvasId}}"></canvas>
+</view>

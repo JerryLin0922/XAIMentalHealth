@@ -1,11 +1,14 @@
 <view class="title">设置</view>
 
 <view class="card">
-  <view class="row"><view>云端同步</view><view><text class="badge {{loggedIn ? '' : 'off'}}">{{loggedIn ? '已连接 · ' + user : '仅本机'}}</text></view></view>
+  <view class="row">
+    <view>云端同步</view>
+    <view><text class="badge {{loggedIn ? '' : 'off'}}">{{loggedIn ? '已连接 · ' + user : '仅本机'}}</text></view>
+  </view>
 </view>
 
 <view class="card" wx:if="{{!loggedIn}}">
-  <view class="muted">尚未登录云端。点此前往登录 / 注册（启用端到端加密同步）。</view>
+  <view class="muted">尚未登录云端。登录后可用同一账户与 Web / APK / EXE 端做端到端加密同步。</view>
   <view class="btn" bindtap="goLogin">登录 / 注册云端</view>
 </view>
 
@@ -21,5 +24,25 @@
   <view class="btn ghost" bindtap="saveBase">保存</view>
 </view>
 
+<view class="title" style="font-size:16px">本机数据</view>
+<view class="card">
+  <view class="row"><text>心情记录</text><text class="muted">{{counts.records}} 条</text></view>
+  <view class="row"><text>对话</text><text class="muted">{{counts.chat}} 条</text></view>
+  <view class="row"><text>问答历史</text><text class="muted">{{counts.qa}} 条</text></view>
+  <view class="row"><text>问答来源</text><text class="muted">{{sources}} 字符</text></view>
+  <view class="row"><text>本地占用</text><text class="muted">{{usage}}</text></view>
+  <view class="muted" style="padding:8px 0 0" wx:if="{{storageInfo}}">{{storageInfo}}</view>
+</view>
+
+<view class="card">
+  <view class="btn ghost" bindtap="exportBackup">导出 JSON 备份</view>
+  <view class="btn ghost" bindtap="clearSources">清空问答来源</view>
+  <view class="btn ghost" bindtap="clearChat">清空对话与问答历史</view>
+  <view class="btn" bindtap="wipeAll">清空全部数据</view>
+</view>
+
 <view class="sub" style="margin:8px 14px">{{note}}</view>
-<view class="sub" style="margin:8px 14px">本机记录数：本地存储，加密后方可被服务端读取。</view>
+<view class="sub" style="margin:8px 14px">
+  隐私边界：记录只写入本机微信存储，不上传、不同步、无遥测；只有在「模型」页显式开启云端模型
+  或登录云端同步后才会产生网络请求。
+</view>

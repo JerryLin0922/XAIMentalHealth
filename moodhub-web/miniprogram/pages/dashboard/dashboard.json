@@ -1,1 +1,1 @@
-{ "navigationBarTitleText": "看板" }
+{ "navigationBarTitleText": "看板", "usingComponents": { "line-chart": "/components/line-chart/line-chart" } }

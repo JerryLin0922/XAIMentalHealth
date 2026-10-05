@@ -1,25 +1,58 @@
 <view class="title">记录</view>
-<view class="sub">记录心情 / 睡眠 / 心率 / 压力。本地保存，可选加密同步到云端。</view>
+<view class="sub">本地保存 · 与 Web / APK / EXE 端同一份数据结构</view>
 
-<view class="btn" bindtap="toggleForm" wx:if="{{!showForm}}">+ 新增记录</view>
+<view class="card" style="padding:10px 14px">
+  <input class="search" placeholder="按日期或备注关键词筛选" value="{{keyword}}" bindinput="onKeyword" />
+</view>
+
+<view class="btn" bindtap="openAdd" wx:if="{{!showForm}}">+ 新增记录</view>
 
 <view class="card" wx:if="{{showForm}}">
-  <picker mode="date" bindchange="onInput" data-k="date"><view class="input">日期：{{form.date || '选择日期'}}</view></picker>
-  <input class="input" placeholder="时间（选填）" data-k="time" value="{{form.time}}" bindinput="onInput" />
-  <input class="input" placeholder="心情 1-5" type="digit" data-k="mood" value="{{form.mood}}" bindinput="onInput" />
-  <input class="input" placeholder="睡眠(小时)" type="digit" data-k="sleep" value="{{form.sleep}}" bindinput="onInput" />
-  <input class="input" placeholder="心率(bpm)" type="digit" data-k="heartRate" value="{{form.heartRate}}" bindinput="onInput" />
-  <input class="input" placeholder="压力 0-10" type="digit" data-k="stress" value="{{form.stress}}" bindinput="onInput" />
-  <input class="input" placeholder="备注（选填）" data-k="note" value="{{form.note}}" bindinput="onInput" />
+  <view class="muted">{{form.id ? '编辑记录' : '新增记录'}}</view>
+
+  <view class="frow">
+    <text class="flabel">日期</text>
+    <picker mode="date" value="{{form.date}}" end="{{today}}" bindchange="onDate">
+      <view class="pick">{{form.date || '选择日期'}}</view>
+    </picker>
+  </view>
+  <view class="err" wx:if="{{errors.date}}">{{errors.date}}</view>
+
+  <view class="frow">
+    <text class="flabel">时间</text>
+    <picker mode="time" value="{{form.time}}" bindchange="onField" data-k="time">
+      <view class="pick">{{form.time || '选填'}}</view>
+    </picker>
+  </view>
+
+  <block wx:for="{{metrics}}" wx:key="key" wx:for-item="m">
+    <view class="frow">
+      <text class="flabel">{{m.label}}</text>
+      <text class="muted">{{form[m.key]}} {{m.unit}}</text>
+    </view>
+    <slider class="sl" min="{{m.min}}" max="{{m.max}}" step="{{m.step}}" value="{{form[m.key]}}"
+            activeColor="#2f6f62" block-size="20" data-k="{{m.key}}" data-step="{{m.step}}" bindchange="onSlider" />
+    <view class="err" wx:if="{{errors[m.key]}}">{{errors[m.key]}}</view>
+  </block>
+
+  <view class="muted" style="margin-top:10px">备注（≤500 字）</view>
+  <textarea class="ta" value="{{form.note}}" maxlength="500" auto-height bindinput="onField" data-k="note" />
+  <view class="err" wx:if="{{errors.note}}">{{errors.note}}</view>
+
   <view class="btn" bindtap="save">保存</view>
-  <view class="btn ghost" bindtap="toggleForm">取消</view>
+  <view class="btn ghost" bindtap="closeForm">取消</view>
 </view>
 
 <view class="card">
-  <view class="row" wx:for="{{list}}" wx:key="id">
-    <view>{{item.date}} <text class="muted">{{item.time}}</text>
-      <text class="muted"> · 心情 {{item.mood}} / 睡眠 {{item.sleep}} / 心率 {{item.heartRate}} / 压力 {{item.stress}}</text></view>
-    <view class="badge off" bindtap="remove" data-id="{{item.id}}">删除</view>
+  <view class="row" wx:for="{{filtered}}" wx:key="id">
+    <view style="flex:1" data-id="{{item.id}}" bindtap="openEditItem">
+      <view>{{item.date}} <text class="muted">{{item.time}}</text></view>
+      <view class="muted">{{item.mood}} / {{item.sleep}} / {{item.heartRate}} / {{item.stress}}</view>
+      <view class="muted" wx:if="{{item.note}}">{{item.note}}</view>
+    </view>
+    <view class="badge off" data-id="{{item.id}}" catchtap="remove">删除</view>
   </view>
-  <view class="muted" wx:if="{{!list.length}}" style="padding:8px 14px">暂无记录</view>
+  <view class="muted" wx:if="{{!filtered.length}}" style="padding:8px 0">
+    {{list.length ? '没有符合条件的记录' : '还没有记录'}}
+  </view>
 </view>

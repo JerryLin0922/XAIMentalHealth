@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 品牌色，来自 css/styles.css 的 --brand -->
+    <color name="brand">#2F6F62</color>
+    <!-- 应用启动背景，与页面 --bg 一致，避免冷启动白屏 -->
+    <color name="window_background">#F6F4F0</color>
+    <!-- 自适应图标底色（命名避开 Android 保留字） -->
+    <color name="launcher_background">#2F6F62</color>
+</resources>

@@ -249,6 +249,19 @@ moodhub-web/
 
 响应式断点：1024px（指标卡两列）、860px（切底部标签栏）、620px（单列 + 弹窗适配）。
 
+### 原生应用
+
+同一套页面还可以打包成三种原生形态，业务代码零改动：
+
+| 形态 | 目录 | 构建命令 |
+| --- | --- | --- |
+| Android APK | `android/` | `powershell -File android\scripts\build-apk.ps1` |
+| Windows EXE | `desktop/` | `cd desktop && npm install && npm run dist` |
+| 微信小程序 | `miniprogram/` | 微信开发者工具导入 `miniprogram/` |
+
+详见 **[docs/cross-platform.md](docs/cross-platform.md)**：方案选型、工具链、构建流程、
+浏览器 API 与原生 API 对照表、平台限制应对，以及 `tools/` 下的自动化脚本说明。
+
 ---
 
 ## 已知边界

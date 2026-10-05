@@ -1,0 +1,2 @@
+.lc-wrap { width: 100%; position: relative; }
+.lc-canvas { width: 100%; height: 100%; }

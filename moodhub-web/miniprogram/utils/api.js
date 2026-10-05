@@ -23,4 +23,11 @@ function request(method, path, body) {
   });
 }
 
-module.exports = { request, getBase, setBase: (u) => { if (app && app.globalData) app.globalData.apiBase = u; } };
+module.exports = {
+  request,
+  getBase,
+  setBase(u) {
+    if (app && app.globalData) app.globalData.apiBase = u;
+    wx.setStorageSync('moodhub.apiBase', u);
+  }
+};

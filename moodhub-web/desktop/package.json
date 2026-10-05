@@ -1,0 +1,24 @@
+{
+  "name": "moodhub-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MoodHub Windows / macOS / Linux 桌面端（Electron 壳）",
+  "main": "main.js",
+  "author": "MoodHub",
+  "license": "MIT",
+  "scripts": {
+    "sync": "node ../tools/sync-web-assets.cjs desktop",
+    "icons": "node ../tools/make-icons.cjs",
+    "start": "npm run sync && electron .",
+    "dist": "npm run sync && electron-builder --win --x64",
+    "dist:all": "npm run sync && electron-builder --win --x64 --arm64",
+    "dist:portable": "npm run sync && electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}
