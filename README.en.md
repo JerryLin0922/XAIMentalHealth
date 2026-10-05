@@ -49,6 +49,20 @@ The system adopts a **modular microservices architecture** for scalability and p
 
 ---
 
+### 2.5 Patient-Facing Web Module (MoodHub)
+> The repository now ships a runnable **patient-facing web module `moodhub-web/`**: zero dependencies, zero build steps, works offline, and runs directly in the browser for daily mood tracking, self-awareness, and gentle companionship.
+
+```bash
+cd moodhub-web
+node serve.cjs          # → http://localhost:5173
+node tests/run-all.cjs  # regression tests (no browser needed)
+```
+
+- Module docs & privacy boundary: [moodhub-web/README.md](moodhub-web/README.md)
+- Module design spec: [docs/moodhub-module-spec.md](docs/moodhub-module-spec.md)
+
+---
+
 ### 3. Usage Guide (Summary)  
 #### **For Patients**:  
 1. **Registration**: Provide basic info (age, medical history) and authorize wearable device integration.  

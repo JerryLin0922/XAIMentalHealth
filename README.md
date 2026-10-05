@@ -19,6 +19,20 @@
 
 ---
 
+### 一.5、患者端 Web 模块（MoodHub）已落地
+> 仓库现已包含可运行的 **患者端 Web 模块 `moodhub-web/`**：零依赖、零构建、断网可用，浏览器直接运行，承担患者日常心情记录、自我觉察与温和陪伴职责。
+
+```bash
+cd moodhub-web
+node serve.cjs          # → http://localhost:5173
+node tests/run-all.cjs  # 回归测试（无需浏览器）
+```
+
+- 模块说明与隐私边界：[moodhub-web/README.md](moodhub-web/README.md)
+- 模块设计文档：[docs/moodhub-module-spec.md](docs/moodhub-module-spec.md)
+
+---
+
 ### 二、使用说明  
 #### **1. 患者端使用流程**  
 - **注册与授权**：  
