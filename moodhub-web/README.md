@@ -75,7 +75,7 @@ npm run db:init && npm run deploy     # 记下 https://<subdomain>.workers.dev
 > 动态网站后端与微信小程序端。核心是一份三端共享的纯 JS 加密内核（`shared/cipher.js`），
 > 服务端永远只保存密文、读不到任何明文。设计细节见 [docs/architecture.md](docs/architecture.md)。
 
-1. **用户数据加密存储**：AES-256-CTR + HMAC-SHA256（Encrypt-then-Mac），口令派生密钥。
+1. **用户数据加密存储**：AES-256-CTR + HMAC-SHA256（Encrypt-then-MAC），口令派生密钥。
    支持 `local`（本机直加密）与 `cloud`（信封加密：随机 dataKey 加密数据、再用口令密钥包裹后上传）
    两种模式；密钥仅在内存中派生，刷新即丢。验证见 `tests/cipher.cjs`。
 2. **网站动态化**：新增 `worker/`（Cloudflare Worker + D1）提供 `/api/auth/*` 与 `/api/vault`，
