@@ -1,0 +1,19 @@
+name = "moodhub-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# D1 数据库绑定（存储账户与加密信封）
+[[d1_databases]]
+binding = "DB"
+database_name = "moodhub"
+database_id = "REPLACE_WITH_YOUR_D1_ID"   # wrangler d1 create moodhub 后填入
+
+# 本地开发时的 D1（wrangler dev 会自动用本地 sqlite）
+# 生产部署前，先：wrangler d1 execute moodhub --remote --file=./schema.sql
+
+# 若在 Cloudflare Pages 上托管前端，可把本 Worker 作为自定义域名下的 /api 代理；
+# 也可单独用本 Worker 托管（见 README）。SESSION_SECRET 通过 secret 注入：
+#   wrangler secret put SESSION_SECRET
+[vars]
+# 仅占位，真实密钥请用 wrangler secret put SESSION_SECRET 设置
+SESSION_SECRET = "dev-only-change-me"

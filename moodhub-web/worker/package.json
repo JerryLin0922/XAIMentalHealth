@@ -1,0 +1,16 @@
+{
+  "name": "moodhub-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MoodHub 后端：Cloudflare Worker + D1，仅存储加密信封，服务端不可读。",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute moodhub --remote --file=./schema.sql",
+    "db:init:local": "wrangler d1 execute moodhub --local --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}
