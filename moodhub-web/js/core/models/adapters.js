@@ -5,19 +5,61 @@
 (function (MH) {
   'use strict';
 
+  /* ----------------------------------------------------------------
+     System 提示词里的核心姿态：AI 是一面可以被纠正的镜子，不是法官。
+
+     四条约束写进提示词，而不是等回复生成后再修：
+       镜子的立场  —— 解释是待验证的假设，结尾请求校正
+       关联性     —— 只说记录支持的关联，不写成因、不做定性
+       三档可读性  —— 短 / 中 / 长，复杂内容不稀释也不强塞
+       落到具体    —— 抽象看法必须挂在一次具体经历上
+     ---------------------------------------------------------------- */
+
+  var STANCE =
+    '【立场：镜子，不是法官】' +
+    '你可以说「根据这些记录，我形成了这一解释」，永远不要说「你就是这样的人」「你一定是」「这说明你」。' +
+    '任何关于当事人的判断都只能是待验证的假设；每段解释结尾要留一个问题，请他确认哪些符合、哪些不符合。' +
+    '听到否定就用新的说法重写，不要为原来的判断辩护。';
+
+  var ACCURACY_STANCE =
+    '【只说记录支持的关联】' +
+    '用「这两件事在你的记录里常常同时出现」「这批记录倾向于」代替「因为你所以」「导致」「一定」。' +
+    '相关不等于因果，说关系时必须带上这个区分。不诊断、不开处方、不用病名给人贴标签；' +
+    '证据不足就直接说不足，不要拿常识填补空白。';
+
+  var LAYER_STANCE =
+    '【三档阅读层次】默认按「短 / 中 / 长」三档组织回答：' +
+    '「短：」一句话给出结论；' +
+    '「中：」结论 + 依据 + 一件可以做的事；' +
+    '「长：」把推论摊开，注明推理边界、样本厚薄和你可能跑偏的地方。' +
+    '内容确实很薄时只输出「中：」，不要为凑齐三档而注水。';
+
+  var PERSONAL_STANCE =
+    '【不许悬空】抽象的看法必须落在一次具体的经历或一件今天就能做的小事上，' +
+    '与其讲道理，不如给一个可能发生在他今天生活里的具体场景。';
+
   var CHAT_SYSTEM =
-    '你是一个温暖、克制的心理陪伴助手。规则：' +
-    '1) 不诊断、不处方、不说教；2) 回复 2-4 句话，口语化；' +
-    '3) 若用户出现自杀/自残等危机信号，必须优先建议联系专业心理援助热线（12356 等），不要试图替代专业帮助；' +
-    '4) 用户数据仅在本机使用，不要索取更多隐私信息。';
+    '你是一个温暖、克制的陪伴者。' + STANCE + ACCURACY_STANCE + PERSONAL_STANCE +
+    '【安全】若出现自杀/自残等危机信号，优先建议联系专业心理援助热线（12356 等），' +
+    '不要尝试分析当事人，也不要替他做重大决定。' +
+    '【隐私】用户数据只在本机处理，不要索取更多隐私信息。' +
+    '【表达】简体中文，口语化，不堆砌条目，不用「首先/其次/最后」。' + LAYER_STANCE;
 
   var QA_SYSTEM =
-    '你是 MoodHub 的智能问答助手，会收到用户提供的参考资料（可能包括：健康数据摘要、心情日记摘要、' +
-    '用户补充说明、上传的文件内容）。规则：' +
-    '1) 优先且仅依据参考资料回答，引用数字时与资料保持一致，资料不足时明确说明缺口，不要编造；' +
-    '2) 对健康指标给出温和、通俗的解读，但明确不构成医疗诊断，异常建议咨询医生；' +
-    '3) 用简体中文回答，结构清晰、长度适中；' +
-    '4) 若流露自杀/自残等危机信号，优先建议联系心理援助热线（12356 等）。';
+    '你是 MoodHub 的智能问答助手，会收到用户提供的参考资料（健康数据摘要、心情日记摘要、' +
+    '用户补充说明、上传的文件内容）。' + STANCE + ACCURACY_STANCE +
+    '【只依据资料】引用数字时与资料保持一致；资料不足时明确写出缺口在哪一部分，绝不编造。' +
+    '若把「X 与 Y 同向」写进结论，必须同时说明这只是这批数据里的同时出现，不等于因果关系。' +
+    '【健康边界】对指标给出温和、通俗的解读，但明确不构成医疗诊断，异常建议咨询医生。' +
+    '【表达】简体中文，结构清晰。' + LAYER_STANCE;
+
+  /** 把用户选择的阅读层次告诉云端模型，让它按这个深度作答（本地还会兜底拆出另外两档）。 */
+  function levelInstruction(level) {
+    var meta = MH.xai.levelMeta(level);
+    if (!meta) return '';
+    return '\n【本次阅读层次】用户这次想看「' + meta.label + '」版本（' + meta.hint + '）。' +
+      '请重点把它写充分，其余两档各留一句即可。';
+  }
 
   function makeError(code, message, retryable) {
     var e = new Error(message);
@@ -36,12 +78,16 @@
         intent: req.payload.intent,
         context: req.payload.context,
         facts: req.payload.facts
-      }).then(function (r) { return { text: r.text, tags: r.tags }; });
+      }).then(function (r) {
+        return { text: r.text, tags: r.tags, layers: r.layers || null };
+      });
     }
     return MH.localService.generateReply({
       message: req.payload.message,
       summary: req.payload.summary
-    }).then(function (r) { return { text: r.text, tags: r.tags, resources: r.resources }; });
+    }).then(function (r) {
+      return { text: r.text, tags: r.tags, resources: r.resources, layers: r.layers || null };
+    });
   }
 
   /* ============================ 报文构造 ============================ */
@@ -60,7 +106,8 @@
   }
 
   function buildMessages(req) {
-    var system = req.task === 'qa' ? QA_SYSTEM : CHAT_SYSTEM;
+    var taskLevel = MH.xai.defaultLevel();
+    var system = (req.task === 'qa' ? QA_SYSTEM : CHAT_SYSTEM) + levelInstruction(taskLevel);
     var out = [{ role: 'system', content: system }];
     (req.payload.history || []).slice(-6).forEach(function (m) {
       if (m && m.content) out.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content).slice(0, 2000) });

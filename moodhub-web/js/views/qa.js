@@ -19,6 +19,91 @@
     busy: false
   };
 
+  // 每个回答当前展开的那一档
+  var qaLevel = {};
+
+  function levelFor(id, ex) {
+    return (qaLevel[id] || (ex && ex.level) || MH.xai.defaultLevel());
+  }
+
+  /**
+   * 回答区：同一份答案给短 / 中 / 长三档，附依据与请求校正。
+   * 没有分层信息时（老数据 / 纯文本输出）退回整段渲染。
+   */
+  function answerNode(id, ex, fallbackText) {
+    if (!ex) return el('div', { class: 'qa-answer', text: fallbackText || '' });
+
+    var wrap = el('div', { class: 'xai' });
+    var body = el('div', { class: 'qa-answer xai__body', text: '' });
+    var box = el('div', { class: 'xai__switch', role: 'group', 'aria-label': '阅读层次' });
+
+    function paint() {
+      var lv = levelFor(id, ex);
+      body.textContent = ex[lv] || ex.medium || fallbackText || '';
+      U.$$('.xai__btn', box).forEach(function (b) {
+        var on = b.dataset.level === lv;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
+    MH.xai.LEVELS.forEach(function (lv) {
+      var meta = MH.xai.LEVEL_META[lv];
+      var btn = el('button', {
+        class: 'xai__btn', type: 'button', dataset: { level: lv },
+        title: meta.hint, text: meta.label
+      });
+      btn.addEventListener('click', function () {
+        qaLevel[id] = lv;
+        MH.store.prefs.set({ xaiLevel: lv });
+        paint();
+      });
+      box.appendChild(btn);
+    });
+    paint();
+
+    wrap.appendChild(box);
+    wrap.appendChild(body);
+
+    if (ex.basis && ex.basis.text) {
+      wrap.appendChild(el('p', { class: 'xai__basis-line', text: ex.basis.text }));
+    }
+    if (ex.evidence && ex.evidence.length) {
+      wrap.appendChild(el('details', { class: 'xai__basis' }, [
+        el('summary', { text: '我依据的是这些（' + ex.evidence.length + ' 条）' }),
+        el('div', { class: 'xai__basis-body', text: ex.evidence.map(function (e) { return '· ' + e; }).join('\n') })
+      ]));
+    }
+    wrap.appendChild(el('p', { class: 'xai__ask', text: MH.xai.REFLECTION }));
+    wrap.appendChild(qaFeedbackRow(id, ex, fallbackText));
+    return wrap;
+  }
+
+  function qaFeedbackRow(id, ex, fallbackText) {
+    var target = 'qa:' + id;
+    var done = MH.store.xai.forTarget(target);
+    var row = el('div', { class: 'xai__fb' });
+
+    [['fits', '符合'], ['partial', '部分符合'], ['reject', '不符合']].forEach(function (o) {
+      var btn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: o[1] });
+      if (done && done.verdict === o[0]) { btn.classList.add('is-on'); btn.disabled = true; }
+      btn.addEventListener('click', function () {
+        MH.store.xai.append({
+          target: target,
+          verdict: o[0],
+          level: levelFor(id, ex),
+          excerpt: String((ex && ex[levelFor(id, ex)]) || fallbackText || '').slice(0, 120)
+        });
+        U.toast(o[0] === 'reject' ? '记下了：这条读法不符合你的经验，下一版会绕开。' : '记下了，谢谢校准。', 'ok', 3000);
+        row.parentNode.replaceChild(qaFeedbackRow(id, ex, fallbackText), row);
+      });
+      row.appendChild(btn);
+    });
+
+    if (done) row.appendChild(el('span', { class: 'hint', text: '已记录 · ' + U.fmtRelative(done.at) }));
+    return row;
+  }
+
   function render(root) {
     root.innerHTML = '';
 
@@ -34,11 +119,13 @@
 
     root.appendChild(sourceCard());
     root.appendChild(el('div', { id: 'qaAskHost' }));
+    root.appendChild(el('div', { id: 'qaMeHost' }));
     root.appendChild(el('div', { id: 'qaResultHost' }));
     root.appendChild(el('div', { id: 'qaHistoryHost' }));
 
     bind(root);
     renderAsk();
+    renderMe();
     renderResult();
     renderHistory();
   }
@@ -176,6 +263,7 @@
     host.innerHTML = '';
 
     var prefs = MH.store.prefs.get();
+    var meOpts = meSettings();
     var topK = el('select', { class: 'input', id: 'qaTopK', style: 'width:auto' }, [1, 2, 3, 4, 6, 8].map(function (n) {
       return el('option', { value: String(n), text: 'Top ' + n });
     }));
@@ -203,6 +291,19 @@
           el('label', { class: 'label', for: 'qaPrompt', html: '补充说明 / 提示词 <span class="label__opt">选填：告诉它每列是什么意思、想要什么格式</span>' }),
           el('textarea', { class: 'input textarea', id: 'qaPrompt', rows: '2', placeholder: '例如：date 是日期，sleep_h 是睡眠小时数；请用三句话回答。' })
         ]),
+        el('div', { class: 'row', style: 'gap:16px;flex-wrap:wrap' }, [
+          el('label', { class: 'check' }, [
+            el('input', { type: 'checkbox', id: 'qaUseMemory', checked: meOpts.useMemory }),
+            el('span', { text: '参考历史对话' })
+          ]),
+          el('label', { class: 'check' }, [
+            el('input', { type: 'checkbox', id: 'qaUsePersona', checked: meOpts.usePersona }),
+            el('span', { text: '带上我的人格画像' })
+          ]),
+          el('span', { class: 'hint', text: '召回' }),
+          el('select', { class: 'input', id: 'qaMemTurns', style: 'width:auto' },
+            [1, 2, 3, 5, 8].map(function (n) { return el('option', { value: String(n), text: n + ' 轮' }); }))
+        ]),
         el('div', { class: 'row' }, [
           el('span', { class: 'hint', text: '证据条数' }), topK,
           el('span', { class: 'hint', text: '上下文预算' }), budgetSel,
@@ -211,6 +312,8 @@
       ])
     ]);
     host.appendChild(card);
+
+    U.$('#qaMemTurns', host).value = String(meOpts.memoryTurns);
 
     U.$('#qaQuestion', host).value = ui.question;
     U.$('#qaPrompt', host).value = ui.prompt;
@@ -223,6 +326,252 @@
     U.$('#qaQuestion', host).addEventListener('keydown', function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submit(); }
     });
+
+    U.$('#qaUseMemory', host).addEventListener('change', function () {
+      MH.me.setSettings({ useMemory: this.checked, usePersona: meSettings().usePersona, memoryTurns: meSettings().memoryTurns });
+    });
+    U.$('#qaUsePersona', host).addEventListener('change', function () {
+      MH.me.setSettings({ useMemory: meSettings().useMemory, usePersona: this.checked, memoryTurns: meSettings().memoryTurns });
+    });
+    U.$('#qaMemTurns', host).addEventListener('change', function () {
+      MH.me.setSettings({ useMemory: meSettings().useMemory, usePersona: meSettings().usePersona, memoryTurns: Number(this.value) });
+    });
+  }
+
+  /* ============================ 我的 · .me ============================ */
+
+  function meSettings() {
+    return MH.me ? MH.me.settings() : { useMemory: false, usePersona: false, memoryTurns: 3 };
+  }
+
+  // .me 五条假设当前展开的那一档
+  var meLevel = null;
+
+  function meUiLevel(h) {
+    return meLevel || MH.xai.defaultLevel();
+  }
+
+  /** 人格卡片顶部的短 / 中 / 长切换：一次换五条的阅读深度。 */
+  function meLevelSwitch(hyps, host) {
+    var box = el('div', { class: 'xai__switch', role: 'group', 'aria-label': '人格假设的阅读层次' });
+    MH.xai.LEVELS.forEach(function (lv) {
+      var meta = MH.xai.LEVEL_META[lv];
+      var btn = el('button', {
+        class: 'xai__btn', type: 'button', dataset: { level: lv },
+        title: meta.hint, text: meta.label
+      });
+      if (meUiLevel() === lv) btn.classList.add('is-on');
+      btn.addEventListener('click', function () {
+        meLevel = lv;
+        MH.store.prefs.set({ xaiLevel: lv });
+        renderMe();
+      });
+      box.appendChild(btn);
+    });
+    return el('div', { class: 'row', style: 'margin-top:10px;gap:8px' }, [
+      box,
+      el('span', { class: 'hint', text: MH.xai.LEVEL_META[meUiLevel()].hint })
+    ]);
+  }
+
+  /** 一条人格假设：分数条 + 当前档位的说法 + 依据 + 当事人的评价按钮。 */
+  function traitNode(h, hyps, host) {
+    var lv = meUiLevel();
+    var fill = el('div', { class: 'me-bar__fill', style: 'width:' + U.clamp(h.score, 0, 100) + '%' });
+    if (h.score >= 66) fill.className += ' is-high';
+    else if (h.score <= 34) fill.className += ' is-low';
+
+    var node = el('div', { class: 'me-trait' }, [
+      el('div', { class: 'me-trait__head' }, [
+        el('b', { text: h.short + ' ' + h.label }),
+        el('span', { class: 'me-trait__score', text: Math.round(h.score) + ' · ' + h.level }),
+        el('span', { class: 'me-trait__conf', text: '置信度 ' + Math.round(h.confidence * 100) + '%' })
+      ]),
+      el('div', { class: 'me-bar' }, [fill]),
+      el('p', { class: 'me-trait__hint', text: h.xai[lv] })
+    ]);
+
+    if (h.samples) {
+      var lines = [h.basis.text];
+      if (h.evidence && h.evidence.length) {
+        lines.push('读到的是这些话：' + h.evidence.map(function (s) { return '「' + s + '」'; }).join('，'));
+      }
+      lines.push(h.xai.long);
+      node.appendChild(el('details', { class: 'xai__basis', style: 'margin-top:6px' }, [
+        el('summary', { text: '这条的依据与可能跑偏的地方' }),
+        el('div', { class: 'xai__basis-body', text: lines.join('\n\n') })
+      ]));
+    }
+    node.appendChild(traitFeedback(h, host));
+    return node;
+  }
+
+  /** 逐条校正：这一票会直接改变这条读法以后怎么被对待。 */
+  function traitFeedback(h, host) {
+    var row = el('div', { class: 'xai__fb', style: 'margin-top:6px' });
+    if (h.correction) {
+      var map = { fits: '符合', partial: '部分符合', reject: '不符合' };
+      row.appendChild(el('span', { class: 'hint', text: '你之前标：' + (map[h.correction.verdict] || h.correction.verdict) +
+        (h.correction.note ? '（' + h.correction.note + '）' : '') + ' · ' + U.fmtRelative(h.correction.at) }));
+    }
+    [['fits', '符合'], ['partial', '部分符合'], ['reject', '不符合']].forEach(function (o) {
+      var btn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: o[1] });
+      if (h.correction && h.correction.verdict === o[0]) { btn.classList.add('is-on'); btn.disabled = true; }
+      btn.addEventListener('click', function () {
+        MH.me.personality.correct(h.key, o[0], '');
+        U.toast(o[0] === 'reject'
+          ? '已把「' + h.label + '」这条拉回中性并降权，下一版不会再拿它当依据。'
+          : '记下了：这条按你说的保留。', 'ok', 3200);
+        renderMe();
+      });
+      row.appendChild(btn);
+    });
+    return row;
+  }
+
+  function renderMe() {
+    var host = document.getElementById('qaMeHost');
+    if (!host || !MH.me) return;
+    host.innerHTML = '';
+
+    var hyps = MH.me.personality.hypotheses();
+    var stats = MH.me.memory.stats();
+    var prof = MH.me.profile.get();
+    var observed = hyps.reduce(function (n, h) { return n + h.samples; }, 0);
+
+    var card = el('div', { class: 'card section' }, [
+      el('div', { class: 'card__head' }, [
+        el('span', { class: 'card__title', text: '我的 · .me' }),
+        el('span', { class: 'badge', text: stats.count + ' 轮记忆 · ' + observed + ' 次观测 · 仅本机' })
+      ]),
+      el('p', { class: 'hint', text: '下面五条是从你的提问与本机读数里长出来的暂定假设，用来让回答更贴合你；它们不是心理测评，不是诊断，更不是「你就是这样的人」。逐条看看哪些准、哪些不准——你说不合的那条，我会拉回中性并且降权。' }),
+      meLevelSwitch(hyps, host)
+    ]);
+
+    // 五条维度：每条都是一句可被推翻的假设
+    var list = el('div', { class: 'me-traits' });
+    hyps.forEach(function (h) {
+      list.appendChild(traitNode(h, hyps, host));
+    });
+    card.appendChild(list);
+
+    // 记忆概览
+    var memLine = stats.count
+      ? '已记住 ' + stats.count + ' 轮问答，' + U.fmtRelative(stats.lastAt) + '更新；新问题会先召回最相关的几轮再回答。'
+      : '还没有记忆。问出第一个问题后，这一轮会自动记下来，之后再问相关的问题就能接得上。';
+    card.appendChild(el('p', { class: 'me-mem', text: memLine }));
+
+    if (prof.focusMetrics && prof.focusMetrics.length) {
+      card.appendChild(el('div', { class: 'row', style: 'margin-top:8px;gap:6px;flex-wrap:wrap' }, [
+        el('span', { class: 'hint', text: '常问：' })
+      ].concat(prof.focusMetrics.map(function (k) {
+        var m = MH.metrics.get(k);
+        return el('span', { class: 'tag', text: m ? m.label : k });
+      }))));
+    }
+
+    // 最近记忆
+    var recent = MH.me.memory.recent(5);
+    if (recent.length) {
+      var items = el('div', { class: 'me-hist' });
+      recent.forEach(function (t) {
+        items.appendChild(el('details', { class: 'qa-hist' }, [
+          el('summary', {}, [
+            el('b', { text: t.question }),
+            el('span', { class: 'qa-hist__meta', text: ' · ' + U.fmtRelative(t.at) })
+          ]),
+          el('div', { class: 'qa-hist__body' }, [
+            el('div', { class: 'qa-answer', text: t.answer })
+          ])
+        ]));
+      });
+      card.appendChild(el('details', { class: 'disclosure', style: 'margin-top:12px' }, [
+        el('summary', { text: '最近记住的 ' + recent.length + ' 轮' }),
+        el('div', { class: 'disclosure__body' }, [items])
+      ]));
+    }
+
+    // 操作
+    var fileInput = el('input', { type: 'file', id: 'qaMeFile', accept: '.json,application/json', style: 'display:none' });
+    card.appendChild(fileInput);
+    card.appendChild(el('div', { class: 'row', style: 'margin-top:14px;gap:8px;flex-wrap:wrap' }, [
+      el('button', { class: 'btn btn--ghost btn--sm', type: 'button', id: 'qaMeExport', text: '导出 .me' }),
+      el('button', { class: 'btn btn--ghost btn--sm', type: 'button', id: 'qaMeImport', text: '导入 .me' }),
+      el('span', { class: 'spacer' }),
+      el('button', { class: 'btn btn--danger btn--sm', type: 'button', id: 'qaMeResetPersona', text: '重置人格' }),
+      el('button', { class: 'btn btn--danger btn--sm', type: 'button', id: 'qaMeClearMem', text: '清空记忆' })
+    ]));
+    card.appendChild(el('p', { class: 'hint', style: 'margin-top:8px',
+      text: '导出后可用 node tools/me-sync.cjs export <文件> 写入本项目的 .me/ 目录；浏览器不会自己写你的磁盘。' }));
+
+    host.appendChild(card);
+
+    U.$('#qaMeExport', host).addEventListener('click', exportMeFile);
+    U.$('#qaMeImport', host).addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () {
+      var f = this.files && this.files[0];
+      this.value = '';
+      if (f) importMeFile(f);
+    });
+    U.$('#qaMeResetPersona', host).addEventListener('click', function () {
+      MH.app.confirm({
+        title: '重置人格画像',
+        body: '把五大人格恢复到 50 分中性、置信度归零？已有的问答记忆会保留。此操作无法撤销。',
+        confirmText: '重置', danger: true
+      }).then(function (yes) {
+        if (!yes) return;
+        MH.me.personality.reset();
+        renderMe();
+        U.toast('人格画像已重置', 'ok');
+      });
+    });
+    U.$('#qaMeClearMem', host).addEventListener('click', function () {
+      if (!MH.me.memory.count()) { U.toast('记忆已经是空的', 'info'); return; }
+      MH.app.confirm({
+        title: '清空问答记忆',
+        body: '清空本机保存的全部问答记忆？人格画像会保留。此操作无法撤销。',
+        confirmText: '清空', danger: true
+      }).then(function (yes) {
+        if (!yes) return;
+        MH.me.memory.clear();
+        renderMe();
+        U.toast('问答记忆已清空', 'ok');
+      });
+    });
+  }
+
+  function exportMeFile() {
+    var data = MH.me.exportMe();
+    try {
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = el('a', { href: url, download: 'me-export-' + U.todayISO() + '.json' });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+      U.toast('已导出 .me：' + data.memory.turns.length + ' 轮记忆', 'ok');
+    } catch (e) {
+      U.toast('导出失败：' + (e && e.message ? e.message : e), 'error', 4000);
+    }
+  }
+
+  function importMeFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var payload;
+      try { payload = JSON.parse(String(reader.result || '')); }
+      catch (e) { U.toast('不是合法的 JSON 文件', 'error', 4000); return; }
+      try {
+        var out = MH.me.importMe(payload, 'merge');
+        renderMe();
+        U.toast('已导入 .me：现有 ' + out.memoryCount + ' 轮记忆', 'ok');
+      } catch (e) {
+        U.toast(e && e.message ? e.message : String(e), 'error', 4500);
+      }
+    };
+    reader.onerror = function () { U.toast('读取文件失败', 'error'); };
+    reader.readAsText(file);
   }
 
   function submit() {
@@ -251,16 +600,21 @@
       sources: MH.store.sources.all()
     }).then(function (res) {
       ui.result = res;
-      if (!res.crisis) MH.store.qa.append({
-        question: res.question,
-        answer: res.answer,
-        customPrompt: ui.prompt,
-        usedSources: res.usedSources,
-        citations: res.citations,
-        contextChars: res.context.charCount,
-        mode: res.mode
-      });
+      if (!res.crisis) {
+        var saved = MH.store.qa.append({
+          question: res.question,
+          answer: res.answer,
+          layers: res.layers || null,
+          customPrompt: ui.prompt,
+          usedSources: res.usedSources,
+          citations: res.citations,
+          contextChars: res.context.charCount,
+          mode: res.mode
+        });
+        res.turnId = saved.id;   // 让这一条回答能被校正到具体 id
+      }
       renderResult();
+      renderMe();
       renderHistory();
       if (res.crisis) MH.app.showCrisis();
     }).catch(function (e) {
@@ -285,7 +639,7 @@
         el('span', { class: 'card__title', text: '回答' }),
         el('span', { class: 'badge', text: res.context.charCount ? res.context.charCount + ' 字符上下文' : '无上下文' })
       ]),
-      el('div', { class: 'qa-answer', text: res.answer })
+      answerNode(res.turnId || ('live:' + res.at), res.layers, res.answer)
     ];
 
     if (res.model) {
@@ -309,6 +663,14 @@
       parts.push(el('div', { class: 'row', style: 'margin-top:12px' }, [
         el('span', { class: 'hint', text: '用到：' })
       ].concat(res.usedSources.map(function (s) { return el('span', { class: 'tag', text: s }); }))));
+    }
+
+    if (res.me && res.me.usedMemory) {
+      parts.push(el('div', { class: 'row', style: 'margin-top:8px;gap:6px;flex-wrap:wrap' }, [
+        el('span', { class: 'tag', text: '参考了 ' + res.me.usedMemory + ' 轮历史对话' }),
+        res.me.usedPersona ? el('span', { class: 'tag', text: '带上了人格画像' }) : null,
+        res.me.recorded ? null : el('span', { class: 'tag', text: '本轮未写入记忆' })
+      ]));
     }
 
     if (res.citations && res.citations.length) {
@@ -355,7 +717,7 @@
           el('span', { class: 'qa-hist__meta', text: ' · ' + U.fmtRelative(t.at) })
         ]),
         el('div', { class: 'qa-hist__body' }, [
-          el('div', { class: 'qa-answer', text: t.answer }),
+          answerNode(t.id, t.layers, t.answer),
           t.usedSources && t.usedSources.length
             ? el('div', { class: 'row', style: 'margin-top:8px' }, t.usedSources.map(function (s) { return el('span', { class: 'tag', text: s }); }))
             : null

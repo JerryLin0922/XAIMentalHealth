@@ -126,7 +126,7 @@ global.fetch = async () => ({ ok: true, status: 200, text: async () => '', json:
 const base = path.join(__dirname, '..', 'js', 'core');
 [
   'util.js', 'crypto.js', 'store.js', 'metrics.js', 'stats.js',
-  'ingest.js', 'retriever.js', 'local-service.js', 'qa.js',
+  'ingest.js', 'retriever.js', 'xai.js', 'me.js', 'local-service.js', 'qa.js',
   'models/registry.js', 'models/adapters.js', 'models/manager.js'
 ].forEach(f => require(path.join(base, f)));
 require(path.join(__dirname, '..', 'js', 'views', 'models.js'));

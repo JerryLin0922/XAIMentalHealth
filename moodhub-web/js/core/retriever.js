@@ -153,7 +153,8 @@
 
   /**
    * 组装上下文。
-   * @param {{prompt?:string, blocks?:Array, healthText?:string, budget?:number}} o
+   * @param {{prompt?:string, blocks?:Array, healthText?:string, personaText?:string,
+   *          memoryText?:string, budget?:number}} o
    * @returns {{text:string, usedSources:string[], charCount:number, blocks:Array}}
    */
   function assemble(o) {
@@ -176,6 +177,8 @@
     }
 
     if (o.prompt && o.prompt.trim()) push('用户补充说明', o.prompt.trim(), '补充说明');
+    if (o.memoryText && o.memoryText.trim()) push('历史对话记忆', o.memoryText.trim(), '历史对话记忆');
+    if (o.personaText && o.personaText.trim()) push('用户人格画像', o.personaText.trim(), '人格画像');
     if (o.healthText && o.healthText.trim()) push('本机健康记录摘要', o.healthText.trim(), '健康记录摘要');
 
     (o.blocks || []).forEach(function (b) {

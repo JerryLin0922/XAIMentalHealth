@@ -7,13 +7,167 @@
 
   var lastPayload = null;
 
+  // 每条 AI 回复当前展开的那一档（short / medium / long），默认跟随全局偏好
+  var levelOverride = {};
+
+  function levelFor(msg) {
+    return (levelOverride[msg.id] || (msg.layers && msg.layers.level) || MH.xai.defaultLevel());
+  }
+
+  function bubble(msg) {
+    var cls = msg.role === 'me' ? 'bubble--me' : (msg.role === 'sys' ? 'bubble--sys' : 'bubble--ai');
+    var node = el('div', { class: 'bubble ' + cls });
+
+    if (msg.role === 'ai' && msg.layers) node.appendChild(xaiBody(msg));
+    else node.appendChild(el('span', { text: msg.text }));
+
+    if (msg.tags && msg.tags.length) {
+      node.appendChild(el('div', { class: 'bubble__tags' }, msg.tags.map(function (t) {
+        return el('span', { class: 'tag', text: t });
+      })));
+    }
+    if (msg.role !== 'sys') node.appendChild(el('span', { class: 'bubble__time', text: U.fmtDateTime(msg.at) }));
+    return node;
+  }
+
+  /**
+   * AI 回复的正文区：短 / 中 / 长三档开关 + 依据 + 请求校正 + 校正按钮。
+   * 结构由 MH.xai 统一产出这里只负责把它摆出来。
+   */
+  function xaiBody(msg) {
+    var ex = msg.layers;
+    var host = el('div', { class: 'xai' });
+
+    // 三档开关
+    var body = el('div', { class: 'xai__body', text: '' });
+    var switchBox = el('div', { class: 'xai__switch', role: 'group', 'aria-label': '阅读层次' });
+
+    function paint() {
+      var lv = levelFor(msg);
+      body.textContent = ex[lv] || ex.medium || msg.text;
+      U.$$('.xai__btn', switchBox).forEach(function (b) {
+        var on = b.dataset.level === lv;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
+    MH.xai.LEVELS.forEach(function (lv) {
+      var meta = MH.xai.LEVEL_META[lv];
+      var btn = el('button', {
+        class: 'xai__btn', type: 'button', dataset: { level: lv },
+        title: meta.hint, text: meta.label
+      });
+      btn.addEventListener('click', function () {
+        levelOverride[msg.id] = lv;
+        // 顺手把这一档记成以后新回复的默认深度
+        MH.store.prefs.set({ xaiLevel: lv });
+        paint();
+      });
+      switchBox.appendChild(btn);
+    });
+    paint();
+
+    host.appendChild(switchBox);
+    host.appendChild(body);
+
+    // 依据：这一版解释到底踩在哪些证据上
+    if ((ex.basis && ex.basis.text) || (ex.evidence && ex.evidence.length)) {
+      var lines = [];
+      if (ex.basis && ex.basis.text) lines.push(ex.basis.text);
+      (ex.evidence || []).forEach(function (e) { lines.push('· ' + e); });
+      host.appendChild(el('details', { class: 'xai__basis' }, [
+        el('summary', { text: '我依据的是这些' }),
+        el('div', { class: 'xai__basis-body', text: lines.join('\n') })
+      ]));
+    }
+
+    host.appendChild(el('p', { class: 'xai__ask', text: shortAsk(levelFor(msg)) }));
+    host.appendChild(feedbackRow(msg));
+    return host;
+  }
+
+  function shortAsk(level) {
+    return level === 'short' ? MH.xai.REFLECTION_SHORT : MH.xai.REFLECTION;
+  }
+
+  /** 符合 / 部分符合 / 不符合：这一票会写进本机，并影响下一版怎么说。 */
+  function feedbackRow(msg) {
+    var target = 'chat:' + msg.id;
+    var done = MH.store.xai.forTarget(target);
+    var row = el('div', { class: 'xai__fb' });
+
+    var opts = [
+      { v: 'fits', text: '符合' },
+      { v: 'partial', text: '部分符合' },
+      { v: 'reject', text: '不符合' }
+    ];
+    opts.forEach(function (o) {
+      var btn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: o.text });
+      if (done && done.verdict === o.v) {
+        btn.classList.add('is-on');
+        btn.disabled = true;
+      }
+      btn.addEventListener('click', function () { submitFeedback(msg, o.v, row); });
+      row.appendChild(btn);
+    });
+
+    if (done) {
+      row.appendChild(el('span', { class: 'hint', text: '已记录 · ' + U.fmtRelative(done.at) + '，下一版会避开这一条' }));
+    } else {
+      var noteBtn = el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: '说说哪不对' });
+      noteBtn.addEventListener('click', function () { askNote(msg, row); });
+      row.appendChild(noteBtn);
+    }
+    return row;
+  }
+
+  function submitFeedback(msg, verdict, row) {
+    var ex = msg.layers || {};
+    var text = ex[levelFor(msg)] || msg.text;
+    MH.store.xai.append({
+      target: 'chat:' + msg.id,
+      verdict: verdict,
+      level: levelFor(msg),
+      excerpt: String(text).slice(0, 120)
+    });
+    U.toast(
+      verdict === 'reject' ? '记下了：这一条不符合你的经验，我会把它放下。'
+        : (verdict === 'partial' ? '记下了：这一条只对了一部分，下一版会更窄。'
+          : '记下了：这条假设继续保留。'),
+      'ok', 3200
+    );
+    var fresh = feedbackRow(msg);
+    row.parentNode.replaceChild(fresh, row);
+  }
+
+  function askNote(msg, row) {
+    var wrap = el('div', { class: 'xai__note' });
+    var input = el('textarea', { class: 'input textarea', rows: '2', placeholder: '哪一句不准？（可留空，只标记不符合）' });
+    var send = el('button', { class: 'btn btn--primary btn--sm', type: 'button', text: '提交' });
+    send.addEventListener('click', function () {
+      MH.store.xai.append({
+        target: 'chat:' + msg.id,
+        verdict: 'reject',
+        level: levelFor(msg),
+        excerpt: String((msg.layers && msg.layers[levelFor(msg)]) || msg.text).slice(0, 120),
+        note: input.value.trim()
+      });
+      U.toast('记下了，下一版会绕开这个说法。', 'ok', 3200);
+      wrap.parentNode.replaceChild(feedbackRow(msg), wrap);
+    });
+    wrap.appendChild(input);
+    wrap.appendChild(send);
+    row.parentNode.insertBefore(wrap, row.nextSibling);
+  }
+
   function render(root) {
     root.innerHTML = '';
 
     root.appendChild(el('div', { class: 'page-head' }, [
       el('div', { class: 'page-head__text' }, [
         el('h1', { class: 'page-title', text: '陪伴' }),
-        el('p', { class: 'page-desc', text: '这里没有真人，也没有云端模型。回应来自本页内置的本地规则服务，它只能看到最近 14 天的均值与趋势。' })
+        el('p', { class: 'page-desc', text: '这里没有真人。回应来自本页内置的本地规则服务，它只能看到最近 14 天的均值与趋势。它给的是依据这批记录形成的一版解释，不是对你的定性——每一条都可以标记为不符合，下一版就不会再这么说。' })
       ]),
       el('div', { class: 'page-head__actions' }, [
         el('button', { class: 'btn btn--ghost', type: 'button', id: 'cmpClear', text: '清空对话' }),
@@ -55,20 +209,6 @@
     if (lastPayload) {
       document.getElementById('cmpPayload').textContent = JSON.stringify(lastPayload, null, 2);
     }
-  }
-
-  function bubble(msg) {
-    var cls = msg.role === 'me' ? 'bubble--me' : (msg.role === 'sys' ? 'bubble--sys' : 'bubble--ai');
-    var node = el('div', { class: 'bubble ' + cls }, [
-      el('span', { text: msg.text })
-    ]);
-    if (msg.tags && msg.tags.length) {
-      node.appendChild(el('div', { class: 'bubble__tags' }, msg.tags.map(function (t) {
-        return el('span', { class: 'tag', text: t });
-      })));
-    }
-    if (msg.role !== 'sys') node.appendChild(el('span', { class: 'bubble__time', text: U.fmtDateTime(msg.at) }));
-    return node;
   }
 
   function paintLog() {
@@ -120,6 +260,7 @@
             role: 'ai',
             text: res.text,
             tags: tags,
+            layers: res.layers || null,      // 短 / 中 / 长 + 依据 + 请求校正
             payload: { sent: sent, model: { id: res.modelId, name: res.modelName, privacy: res.privacy, degraded: res.degraded } }
           });
           lastPayload = sent;

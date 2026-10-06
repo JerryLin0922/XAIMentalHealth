@@ -139,5 +139,8 @@ cython_debug/
 
 # MoodHub web module
 moodhub-web/node_modules/
+moodhub-web/**/node_modules/
 moodhub-web/worker/node_modules/
+moodhub-web/desktop/node_modules/
+moodhub-web/.me/
 *.log

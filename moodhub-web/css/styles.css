@@ -392,6 +392,28 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .bubble__tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-3); color: var(--muted); }
 
+/* ---- XAI：短 / 中 / 长三档 + 依据 + 请求校正 ---- */
+
+.xai { display: flex; flex-direction: column; gap: 10px; }
+.xai__switch { display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-3); width: fit-content; }
+.xai__btn {
+  border: 0; background: transparent; cursor: pointer; color: var(--muted);
+  padding: 4px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  transition: background .16s var(--ease), color .16s var(--ease);
+}
+.xai__btn:hover { color: var(--text); }
+.xai__btn.is-on { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-1); }
+.xai__body { margin: 0; }
+.xai__ask { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); border-left: 2px solid var(--accent-ring); padding-left: 10px; }
+.xai__basis-line { margin: 0; font-size: 12.5px; color: var(--faint); }
+.xai__basis { border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); overflow: hidden; }
+.xai__basis > summary { cursor: pointer; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-2); list-style: none; }
+.xai__basis > summary::-webkit-details-marker { display: none; }
+.xai__basis-body { padding: 0 12px 10px; font-size: 12.5px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; word-break: break-word; }
+.xai__fb { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.xai__fb .btn.is-on { --btn-bg: var(--accent-soft); --btn-fg: var(--accent); --btn-bd: var(--accent-ring); opacity: 1; cursor: default; }
+.xai__note { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+
 .chat__composer { display: flex; gap: 10px; align-items: flex-end; }
 .chat__composer .input { resize: none; max-height: 140px; }
 
@@ -600,6 +622,22 @@ pre.code { margin: 0; padding: 12px; border-radius: 10px; overflow: auto; max-he
 .imp-bar__fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width .2s var(--ease); }
 
 .badge--sm { padding: 1px 6px; font-size: 11px; }
+
+/* ============================ 我的 · .me ============================ */
+
+.me-traits { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.me-trait { display: flex; flex-direction: column; gap: 5px; }
+.me-trait__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.me-trait__head b { font-size: 13.5px; color: var(--text); }
+.me-trait__score { font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.me-trait__conf { font-size: 11.5px; color: var(--faint); margin-left: auto; }
+.me-bar { height: 8px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--line); overflow: hidden; }
+.me-bar__fill { height: 100%; border-radius: 999px; background: var(--muted); transition: width .25s var(--ease); }
+.me-bar__fill.is-high { background: var(--accent); }
+.me-bar__fill.is-low { background: var(--warn, var(--muted)); }
+.me-trait__hint { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.me-mem { margin: 12px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--text-2); }
+.me-hist { display: flex; flex-direction: column; }
 
 @media (max-width: 720px) {
   .map-row { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 6px; }

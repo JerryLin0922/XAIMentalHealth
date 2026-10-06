@@ -15,7 +15,11 @@
     sources: NS + 'qa.sources',   // 勾选了「保存到本机」的问答数据源
     qa: NS + 'qa.turns',          // 问答历史（仅本机）
     models: NS + 'models',        // 模型连接 / 场景选择 / 外发授权 / 调用日志
-    imports: NS + 'imports'       // 第三方健康数据导入历史（只存统计摘要，不存原始数据）
+    imports: NS + 'imports',      // 第三方健康数据导入历史（只存统计摘要，不存原始数据）
+    mePersonality: NS + 'me.personality',  // .me 五大人格画像
+    meProfile: NS + 'me.profile',          // .me 用户画像（称呼 / 常问指标）
+    meMemory: NS + 'me.memory',            // .me 用户与 AI 的全部问答记忆
+    feedback: NS + 'xai.feedback'          // 对 AI 解释的校正：哪条读法准、哪条不准（仅本机）
   };
   var SESSION_KEY = NS + 'session';
   var SESSION_MODEL_KEYS = NS + 'models.keys';   // 「仅本次会话」的 API Key
@@ -73,7 +77,11 @@
     idleLockMinutes: 15,     // 无操作自动锁定（分钟），0 = 不自动锁定
     rangeDays: 14,           // 看板默认区间
     qaTopK: 4,               // 问答检索返回的证据块数量
-    qaContextChars: 12000    // 组装给本地服务的上下文字符预算
+    qaContextChars: 12000,   // 组装给本地服务的上下文字符预算
+    meUseMemory: true,       // 问答时是否召回「历史对话记忆」
+    meUsePersona: true,      // 问答时是否带上「用户人格画像」
+    meMemoryTurns: 3,        // 每次最多召回几轮历史对话
+    xaiLevel: 'medium'       // AI 解释的默认阅读层次：short | medium | long
   };
 
   var prefs = {
@@ -167,7 +175,9 @@
         text: String(msg.text || ''),
         at: msg.at || Date.now(),
         tags: msg.tags || null,
-        payload: msg.payload || null      // 仅保存「本次发送给本地服务的摘要」，便于自查
+        payload: msg.payload || null,     // 仅保存「本次发送给本地服务的摘要」，便于自查
+        // AI 回复的短 / 中 / 长三档与依据（可被用户校正的假设，不在这个字段里写结论）
+        layers: msg.layers || null
       };
       list.push(item);
       if (list.length > 300) list = list.slice(-300);
@@ -269,6 +279,7 @@
         citations: Array.isArray(turn.citations) ? turn.citations.slice(0, 12) : [],
         contextChars: Number(turn.contextChars) || 0,
         mode: turn.mode || 'local',
+        layers: turn.layers || null,      // 同一份答案的短 / 中 / 长三档
         at: turn.at || Date.now()
       };
       list.push(item);
@@ -277,6 +288,94 @@
       return item;
     },
     clear: function () { lsRemove(K.qa); }
+  };
+
+  /* ============================ XAI：解释反馈 ============================
+
+     AI 的每段解释都是待验证的假设。用户点「符合 / 部分符合 / 不符合」之后，
+     结果留在这里：一是让下一版承认上一版被推翻，二是不再把被否的读法搬回来。
+     只存本机，不参与任何外发。 */
+
+  var FEEDBACK_MAX = 200;
+
+  var xai = {
+    all: function () {
+      var list = readJSON(K.feedback, []);
+      return Array.isArray(list) ? list : [];
+    },
+    /**
+     * @param {Object} item
+     *   target   {string}  被评估的解释：'chat:<id>' / 'qa:<id>' / 'personality:<trait>'
+     *   verdict  {string}  'fits'（符合） | 'partial'（部分符合） | 'reject'（不符合）
+     *   level    {string}  当时看的那一档：short / medium / long
+     *   excerpt  {string}  被评估文本的前 120 字，只用于本机回看
+     *   note     {string}  用户自己的补充说明（可空）
+     */
+    append: function (item) {
+      var it = item || {};
+      var verdict = it.verdict === 'fits' || it.verdict === 'partial' ? it.verdict : 'reject';
+      var list = xai.all();
+      var row = {
+        id: it.id || MH.util.uid(),
+        at: it.at || Date.now(),
+        target: String(it.target || '').slice(0, 60),
+        verdict: verdict,
+        level: String(it.level || 'medium').slice(0, 8),
+        excerpt: String(it.excerpt || '').slice(0, 120),
+        note: String(it.note || '').slice(0, 200)
+      };
+      list.push(row);
+      if (list.length > FEEDBACK_MAX) list = list.slice(-FEEDBACK_MAX);
+      writeJSON(K.feedback, list);
+      return row;
+    },
+    recent: function (n) {
+      var list = xai.all().slice().reverse();
+      return n ? list.slice(0, n) : list;
+    },
+    /** 某一条解释最近一次被怎么评价（没有评价返回 null）。 */
+    forTarget: function (target) {
+      var list = xai.all().filter(function (r) { return r.target === target; });
+      return list.length ? list[list.length - 1] : null;
+    },
+    /** 被判为「不符合」的解释，最近的若干条（新 → 旧）。 */
+    rejections: function (n) {
+      var list = xai.all().filter(function (r) { return r.verdict === 'reject'; }).reverse();
+      return n ? list.slice(0, n) : list;
+    },
+    /** 某一类解释累计收到的评价分布。 */
+    summary: function (prefix) {
+      var list = xai.all();
+      if (prefix) list = list.filter(function (r) { return r.target.indexOf(prefix) === 0; });
+      var out = { total: list.length, fits: 0, partial: 0, reject: 0 };
+      list.forEach(function (r) { if (r.verdict in out) out[r.verdict]++; });
+      return out;
+    },
+    clear: function () { lsRemove(K.feedback); }
+  };
+
+  /* ============================ .me（人格 / 画像 / 记忆） ============================ */
+
+  // 只做读写与兜底，推断逻辑全部在 js/core/me.js
+  var me = {
+    personality: {
+      get: function () { return readJSON(K.mePersonality, null); },
+      set: function (p) { writeJSON(K.mePersonality, p); return p; },
+      clear: function () { lsRemove(K.mePersonality); }
+    },
+    profile: {
+      get: function () { return readJSON(K.meProfile, null); },
+      set: function (p) { writeJSON(K.meProfile, p); return p; },
+      clear: function () { lsRemove(K.meProfile); }
+    },
+    memory: {
+      all: function () {
+        var list = readJSON(K.meMemory, []);
+        return Array.isArray(list) ? list : [];
+      },
+      save: function (list) { writeJSON(K.meMemory, Array.isArray(list) ? list : []); },
+      clear: function () { lsRemove(K.meMemory); }
+    }
   };
 
   /* ============================ 模型管理 ============================ */
@@ -627,6 +726,14 @@
       // 只导出勾选了「保存到本机」的问答源；临时来源本就不落盘
       qaSources: (readJSON(K.sources, []) || []).map(normalizeSource),
       qaTurns: qa.all(),
+      // .me：人格画像、用户画像与全部问答记忆（同样只在本机，导出文件请自行保管）
+      me: {
+        personality: readJSON(K.mePersonality, null),
+        profile: readJSON(K.meProfile, null),
+        memory: me.memory.all()
+      },
+      // AI 解释的校正记录：让下一版知道哪些读法已经被否掉
+      xaiFeedback: xai.all(),
       // 导出模型连接配置，但绝不导出 API Key
       models: (function () {
         var s = readModelState();
@@ -661,6 +768,12 @@
       }));
     }
     if (Array.isArray(payload.qaTurns)) { writeJSON(K.qa, payload.qaTurns.slice(-60)); }
+    if (payload.me && typeof payload.me === 'object') {
+      if (payload.me.personality) writeJSON(K.mePersonality, payload.me.personality);
+      if (payload.me.profile) writeJSON(K.meProfile, payload.me.profile);
+      if (Array.isArray(payload.me.memory)) writeJSON(K.meMemory, payload.me.memory);
+    }
+    if (Array.isArray(payload.xaiFeedback)) writeJSON(K.feedback, payload.xaiFeedback.slice(-200));
     if (payload.models && typeof payload.models === 'object') {
       var ms = readModelState();
       ms.active = Object.assign({}, DEFAULT_MODEL_STATE.active, payload.models.active || {});
@@ -680,7 +793,8 @@
 
   function storageUsage() {
     var bytes = 0;
-    [K.records, K.chat, K.prefs, K.auth, K.trust, K.sources, K.qa, K.imports].forEach(function (k) {
+    [K.records, K.chat, K.prefs, K.auth, K.trust, K.sources, K.qa, K.imports,
+      K.mePersonality, K.meProfile, K.meMemory, K.feedback].forEach(function (k) {
       var v = lsGet(k);
       if (v) bytes += v.length + k.length;
     });
@@ -695,7 +809,9 @@
     chat: chat,
     sources: sources,
     qa: qa,
+    me: me,
     imports: imports,
+    xai: xai,
     models: models,
     auth: auth,
     trust: trust,

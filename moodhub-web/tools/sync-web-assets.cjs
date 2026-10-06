@@ -34,6 +34,7 @@ const KERNEL_MODULES = [
   { src: 'js/core/stats.js', ns: 'stats' },
   { src: 'js/core/ingest.js', ns: 'ingest' },
   { src: 'js/core/retriever.js', ns: 'retriever' },
+  { src: 'js/core/xai.js', ns: 'xai' },
   { src: 'js/core/local-service.js', ns: 'localService' },
   { src: 'js/core/qa.js', ns: 'qa' },
   { src: 'js/core/store.js', ns: 'store' },

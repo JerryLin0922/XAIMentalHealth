@@ -5,9 +5,13 @@ const path = require('path');
 
 const SUITES = [
   { file: 'smoke.cjs',            desc: '核心层：口令 / 校验 / 统计 / 检索 / 问答 / 模型路由 / 导入解析' },
+  { file: 'xai.cjs',              desc: '以人为中心的解释层：断言降调 / 三档阅读 / 落到具体经历 / 可纠正假设' },
+  { file: 'dom-xai.cjs',          desc: 'XAI 交互：三档切换 / 依据披露 / 符合与否的反馈与下一次改写' },
   { file: 'dom-models.cjs',       desc: '模型页：分区切换 / 筛选排序 / 详情 / 增删改 / 启停 / 密钥残留' },
   { file: 'dom-import.cjs',       desc: '导入页：选文件 → 解析 → 改映射 → 导入 → 撤销 → 跳转' },
-  { file: 'import-analytics.cjs', desc: '导入 + 分析：模板数据 / 聚合 / 超大与并发边界 / 异常分支' }
+  { file: 'import-analytics.cjs', desc: '导入 + 分析：模板数据 / 聚合 / 超大与并发边界 / 异常分支' },
+  { file: 'me.cjs',               desc: '.me：五大人格推断 / 问答记忆写入召回上限 / 与问答闭环 / 导入导出' },
+  { file: 'dom-qa.cjs',           desc: '问答页：.me 面板渲染 / 开关联动 / 提问后回写与刷新 / 导出与清空' }
 ];
 
 let failedSuites = 0;

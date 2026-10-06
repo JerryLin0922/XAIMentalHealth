@@ -56,119 +56,262 @@
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  /* ============================ 各意图的回应模板 ============================ */
+  /* ---------- XAI 组装辅助：证据口径 / 上一版被推翻的说明 ---------- */
+
+  function basisOf(s) { return MH.xai.basis(s && s.daysWithData, s && s.windowDays); }
+
+  function evidenceOf(list) { return list.filter(Boolean); }
+
+  /** 长档统一补的「推理边界」：数据能到哪里，就停在哪里。 */
+  function boundary(confidence) {
+    var st = MH.xai.strength(confidence);
+    return '边界：这几个数都是聚合出来的，' + st.hedge + '。它看不到昨天那件具体的事，' +
+      '也看不到你当时为什么那样做——那部分只有你知道。';
+  }
+
+  /** 把可选的若干段拼成长档；空段落会被丢掉，避免出现孤零零的空行。 */
+  function joinLong(parts) { return parts.filter(Boolean).join('\n\n'); }
+
+  /* ============================ 各意图的回应模板 ============================
+
+     每个模板返回一份 XAI 规格：
+       short    一句话：先把结论给出来，让人决定要不要往里读
+       medium   标准版：结论 + 依据 + 一件可以做的事
+       long     展开版：把推论摊开 —— 证据、具体场景、推理边界、可选的下一步
+     「降低使其relationships可核查」由 MH.xai.compose 统一处理：
+       断言降调、补全三档、附依据、结尾请求校正。 */
 
   var REPLIES = {
     greeting: function (s) {
       var l = metricLine(s, 'mood');
+      var b = basisOf(s);
       return {
-        text: '我在。' + (l ? '你最近两周' + l + '。' : '') + '\n想先说说今天过得怎么样，还是想让我陪你看看这两周的变化？',
+        short: '我在。你想先说今天，还是先让我讲讲这两周？',
+        medium: '我在。' + (l ? '你最近两周' + l + '。' : '') +
+          '\n不过这只是平均值，今天的你才是准的。从哪儿开始都行。',
+        long: joinLong([
+          '我在，这次由你挑头：可以先讲今天发生的一件小事，也可以先让我讲这两周的趋势。',
+          l ? '我能看到的只有一行很粗的账：你最近两周' + l + '。它看得到走势，看不到昨天发生了什么。' : '',
+          MH.xai.personalize('数字看不出日子', '同样是「心情 3 分」，一种是被否掉一个方案后在会议室坐了一下午，一种是连着三天下雨没出门。数一样，底下的两天完全不同。'),
+          '所以我不打算从这行账里替你总结什么。你丢一句没头没尾的话过来就行。'
+        ]),
+        evidence: evidenceOf([l]),
+        basis: b,
         tags: ['开场']
       };
     },
+
     moodLow: function (s) {
       var l = metricLine(s, 'mood');
+      var b = basisOf(s);
+      var action = pick([
+        '如果愿意，试着说一件今天让你稍微松一点的小事——哪怕只是水喝够了。',
+        '要不要把现在脑子里转的那句话直接写下来？不用组织语言，原样丢给我就行。'
+      ]);
       return {
-        text: '听起来这几天压着不少东西。这种低气压不需要被马上赶走，先让它有个地方待着就好。\n' +
-          (l ? '我这边看到你' + l + '。数字只是参考，你的感受才是准的。\n' : '') +
-          pick([
-            '如果愿意，试着说一件今天让你稍微松一点的小事——哪怕只是水喝够了。',
-            '要不要把现在脑子里转的那句话直接写下来？不用组织语言，原样丢给我就行。'
-          ]),
+        short: '这几天压着不少东西。它不需要马上被赶走。',
+        medium: '听起来这几天压着不少东西。这种低气压不需要被马上赶走，先让它有个地方待着就好。\n' +
+          (l ? '我这边看到你' + l + '。数字只是参考，你的感受才是准的。\n' : '') + action,
+        long: joinLong([
+          '听起来这几天压着不少东西。我先把结论摆在前面：这种低气压不需要被马上赶走，先让它有个地方待着就好。',
+          l ? '我读到的是：你' + l + '。这是最近这些天的平均水平，不是你今天的评分。' : '',
+          MH.xai.personalize('低落常常有它的用法', '有人在被通知调岗的那一周，连续四天什么都不想做，第五天才发现自己其实是在拖延一件必须做的决定——低落把决策窗口关小了，也顺手挡掉了几个冲动的选择。我不确定你这边是不是这回事。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: evidenceOf([l]),
+        basis: b,
         tags: ['情绪低落', '陪伴']
       };
     },
+
     sleep: function (s) {
       var l = metricLine(s, 'sleep');
       var t = trendPhrase(s, 'sleep');
+      var b = basisOf(s);
+      var action = pick([
+        '今晚可以试一件小事：睡前 30 分钟把屏幕放远，只留一盏暖灯。不用追求立刻睡着。',
+        '如果躺下 20 分钟还醒着，就起来坐一会儿再回床上，别和「必须睡着」较劲。'
+      ]);
       return {
-        text: '睡眠一乱，白天什么都跟着变沉。\n' +
-          (l ? '你' + l + '，' + (t ? t + '。' : '') + '\n' : '') +
-          pick([
-            '今晚可以试一件小事：睡前 30 分钟把屏幕放远，只留一盏暖灯。不用追求立刻睡着。',
-            '如果躺下 20 分钟还醒着，就起来坐一会儿再回床上，别和"必须睡着"较劲。'
-          ]),
+        short: '睡眠一乱，白天什么都跟着变沉——先别急着怪自己状态差。',
+        medium: '睡眠一乱，白天什么都跟着变沉。\n' +
+          (l ? '你' + l + '，' + (t ? t + '。' : '') + '\n' : '') + action,
+        long: joinLong([
+          '睡眠一乱，白天什么都跟着变沉。这里我只说一件有把握的事：这两件事在你的记录里常常同时出现，但我没有证据说谁引起谁。',
+          (l || t) ? '读到的是：你' + [l, t].filter(Boolean).join('；') + '。' : '',
+          l && t ? MH.xai.association('睡眠时长偏低', '第二天更吃力', { days: s && s.daysWithData }) : '',
+          MH.xai.personalize('睡眠不足会放大情绪', '有人周三只睡了四个半小时，周四在会上被一句平常的话刺到，当场就红了眼眶——那个场合本身没什么，稀缺的是前一晚那四个半小时。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: evidenceOf([l, t]),
+        basis: b,
         tags: ['睡眠', '自我照顾']
       };
     },
+
     stress: function (s) {
       var st = metricLine(s, 'stress');
       var hr = metricLine(s, 'heartRate');
+      var b = basisOf(s);
+      var action = pick([
+        '现在先做一轮慢呼吸：吸气 4 秒、停 2 秒、呼气 6 秒，重复 5 次。这不是鸡汤，是在给神经系统一个减速信号。',
+        '把待办从脑子里搬到纸上，分成「今天必须」和「可以明天」两堆。搬完就等于卸载了一部分。'
+      ]);
       return {
-        text: '压力堆到这个程度，身体通常会先发出信号。\n' +
-          (st ? '你' + st + '，' : '') + (hr ? hr + '。' : '') +
-          '\n' + pick([
-            '现在先做一轮慢呼吸：吸气 4 秒、停 2 秒、呼气 6 秒，重复 5 次。这不是鸡汤，是在给神经系统一个减速信号。',
-            '把待办从脑子里搬到纸上，分成"今天必须"和"可以明天"两堆。搬完就等于卸载了一部分。'
-          ]),
+        short: '压力堆到这个程度，身体通常会先发出信号。',
+        medium: '压力堆到这个程度，身体通常会先发出信号。\n' +
+          (st ? '你' + st + '，' : '') + (hr ? hr + '。' : '') + '\n' + action,
+        long: joinLong([
+          '压力堆到这个程度，身体通常会先发出信号。这是记录里最一致的一处，也是我最有把握的一句。',
+          [st, hr].filter(Boolean).length ? '读到的是：你' + [st, hr].filter(Boolean).join('；同时') + '。' : '',
+          st && hr ? MH.xai.association('压力读数偏高', '心率也偏高', { days: s && s.daysWithData }) : '',
+          MH.xai.personalize('身体比意志更早知道', '有人连着两周赶项目，自己觉得还能撑，是手表先跳出静息心率上了一个台阶——他以为是天气热，其实是身体在替他叫停。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: evidenceOf([st, hr]),
+        basis: b,
         tags: ['压力', '呼吸练习']
       };
     },
+
     anxiety: function (s) {
+      var b = basisOf(s);
+      var action = pick([
+        '试着找一个能说出来的东西：5 样看得见的、4 样摸得到的、3 样听得到的。把注意力从预测拉回此刻。',
+        '把「我在担心什么」写成一句完整的话。写出来之后，它通常会从一团雾变成一个可以对付的具体问题。'
+      ]);
       return {
-        text: '慌的时候，人会被"还没发生的事"拽着走。\n' +
-          pick([
-            '试着找一个能说出来的东西：5 样看得见的、4 样摸得到的、3 样听得到的。把注意力从预测拉回此刻。',
-            '把"我在担心什么"写成一句完整的话。写出来之后，它通常会从一团雾变成一个可以对付的具体问题。'
-          ]),
+        short: '慌的时候，人会被「还没发生的事」拽着走。',
+        medium: '慌的时候，人会被「还没发生的事」拽着走。\n' + action,
+        long: joinLong([
+          '慌的时候，人会被「还没发生的事」拽着走。这是我的解释，不是一个已经确定的机制——你觉得准不准，比我怎么看更重要。',
+          MH.xai.personalize('焦虑擅长替人预测未来', '有人凌晨三点把明天汇报可能出的七种错都想了一遍，第二天只发生了其中最轻的那种，而他已经白熬了一夜——担心的部分兑现了，代价却提前付了整整一倍。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: [],
+        basis: b,
         tags: ['焦虑', '回到当下']
       };
     },
+
     anger: function (s) {
+      var b = basisOf(s);
+      var action = pick([
+        '先给身体一个出口：快走十分钟，或者把想说的话先写下来不发。等心率降下来再决定要不要表达。',
+        '试着把它翻译成一句「我需要……」。愤怒背后通常藏着一个没被满足的需要。'
+      ]);
       return {
-        text: '生气常常是在说：某个边界被踩了。它本身不是坏事。\n' +
-          pick([
-            '先给身体一个出口：快走十分钟，或者把想说的话先写下来不发。等心率降下来再决定要不要表达。',
-            '试着把它翻译成一句"我需要……"。愤怒背后通常藏着一个没被满足的需要。'
-          ]),
+        short: '生气常常是在说：某个边界被踩了。它本身不是坏事。',
+        medium: '生气常常是在说：某个边界被踩了。它本身不是坏事。\n' + action,
+        long: joinLong([
+          '生气常常是在说：某个边界被踩了。它本身不是坏事——这是我到目前为止最愿意相信的一种读法，但它完全可能是另一种：你当天只是太累了。',
+          MH.xai.personalize('愤怒后面通常有一句没说出口的需要', '有人因为同事临时甩锅炸了半天，真正在说的是「我需要有人提前告诉我」——把这句说完之后，火气当天下午就退了。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: [],
+        basis: b,
         tags: ['愤怒', '边界']
       };
     },
+
     lonely: function (s) {
+      var b = basisOf(s);
+      var action = pick([
+        '孤独最难的地方是「说了也没用」这个预设。你已经说出来了，这本身就是一步。',
+        '如果想找真人，我可以给你一些 24 小时都在的心理热线，随时可以说。'
+      ]);
       return {
-        text: '我在这儿，不会评判你。\n' +
-          pick([
-            '孤独最难的地方是"说了也没用"这个预设。你已经说出来了，这本身就是一步。',
-            '如果想找真人，我可以给你一些 24 小时都在的心理热线，随时可以说。'
-          ]),
+        short: '我在这儿，不会评判你。你已经说出来了，这就是一步。',
+        medium: '我在这儿，不会评判你。\n' + action,
+        long: joinLong([
+          '我在这儿，不会评判你。先说清楚我做不到什么：我给不了真人那种在场感，只能陪你把话说完。',
+          MH.xai.personalize('“说了也没用”这个预设', '有人攒了一肚子话，最后只发出「在吗」两个字——不是没话说，是先要确认对面会不会接住。你刚才这一步，等于替自己试了一次。'),
+          boundary(b.confidence),
+          action
+        ]),
+        evidence: [],
+        basis: b,
         tags: ['孤独', '陪伴']
       };
     },
+
     tired: function (s) {
       var sl = metricLine(s, 'sleep');
+      var b = basisOf(s);
+      var action = pick([
+        '今天能不能给自己排一件「什么都不做」的 15 分钟？不是休息为了更高效率，就是单纯允许停下。',
+        '先补最基础的三样：水、饭、睡。别在缺觉的时候做重大决定。'
+      ]);
       return {
-        text: '累到这个份上，不是靠意志力能顶过去的。\n' +
-          (sl ? '你' + sl + '，身体的账迟早要还。\n' : '') +
-          pick([
-            '今天能不能给自己排一件"什么都不做"的 15 分钟？不是休息为了更高效率，就是单纯允许停下。',
-            '先补最基础的三样：水、饭、睡。别在缺觉的时候做重大决定。'
-          ]),
+        short: '累到这个份上，不是靠意志力能顶过去的。',
+        medium: '累到这个份上，不是靠意志力能顶过去的。\n' +
+          (sl ? '你' + sl + '，身体的账迟早要还。\n' : '') + action,
+        long: joinLong([
+          '累到这个份上，不是靠意志力能顶过去的。我说得更直白一点：意志力在这里不是解法，补账才是。',
+          sl ? '读到的是：你' + sl + '。' : '',
+          MH.xai.personalize('把疲惫当成性格问题会误判', '有人年末连轴转了三周，开始怀疑自己「是不是变懒了」；休假回来同样的工作量，他又恢复到原来的节奏——变的不是毅力，是账本上的欠额。'),
+          boundary(b.confidence),
+          '可以试的一件小事：' + action
+        ]),
+        evidence: evidenceOf([sl]),
+        basis: b,
         tags: ['疲惫', '休息']
       };
     },
+
     good: function (s) {
       var l = metricLine(s, 'mood');
+      var b = basisOf(s);
       return {
-        text: '真好，这种时刻值得被记下来。\n' +
+        short: '真好，这种时刻值得被记下来。',
+        medium: '真好，这种时刻值得被记下来。\n' +
           (l ? '你' + l + '，趋势是往上的。\n' : '') +
           '把它写进今天的记录里吧——以后低气压的时候，你会需要看到今天这一页。',
+        long: joinLong([
+          '真好，这种时刻值得被记下来。它值得被特意存一个副本，不只因为好，还因为它有用。',
+          l ? '读到的是：你' + l + '。' : '',
+          MH.xai.personalize('好状态是以后能反复取用的材料', '有人在低落那周翻回三个月前的一条记录：「今天在楼下便利店听到老歌，站那儿听完了整首」。他后来跟我说，那一行字比任何道理都管用——因为它证明他确实好过，不是记错了。'),
+          boundary(b.confidence),
+          '今天可以做的：把这件事写进记录里，哪怕只一句。以后低气压的时候，你会需要看到今天这一页。'
+        ]),
+        evidence: evidenceOf([l]),
+        basis: b,
         tags: ['正向时刻', '记录']
       };
     },
+
     fallback: function (s) {
-      var lines = [];
       var m = metricLine(s, 'mood'), sl = metricLine(s, 'sleep');
       var st = metricLine(s, 'stress');
-      if (m || sl || st) {
-        lines.push('我把最近 14 天的统计看了一遍：' + [m, sl, st].filter(Boolean).join('，') + '。');
-      } else {
-        lines.push('你还没有足够的记录，所以我先不猜——你说的话就是最主要的信息。');
-      }
-      lines.push(pick([
+      var b = basisOf(s);
+      var ev = evidenceOf([m, sl, st]);
+      var ask = pick([
         '想接着说说具体发生了什么吗？哪怕只是一句话。',
         '如果不知道从哪儿说起，就先说身体：现在最明显的感受在哪儿？'
-      ]));
-      return { text: lines.join('\n'), tags: ['倾听'] };
+      ]);
+      return {
+        short: ev.length ? '我把最近的统计看了一遍，但在你说更多之前，我不会先替你总结。' : '你说的话就是最主要的信息，我不先猜。',
+        medium: (ev.length
+          ? '我把最近 ' + (s && s.windowDays || 14) + ' 天的统计看了一遍：' + ev.join('，') + '。这只是读数，不是对你的判断。'
+          : '你还没有足够的记录，所以我先不猜——你说的话就是最主要的信息。') + '\n' + ask,
+        long: joinLong([
+          ev.length
+            ? '我把最近 ' + (s && s.windowDays || 14) + ' 天的统计看了一遍。先把话放这儿：这几个数在我眼里是读数，不是对你的判断。'
+            : '你还没有足够的记录，所以我先不猜。',
+          ev.length ? '读到的是：' + ev.join('；') + '。' : '',
+          MH.xai.personalize('同一个数字底下可以有完全不同的两天', '同样是「压力 6 分」，一种是被一个快到期的项目顶着，另一种仅仅是当天没吃早饭、赶了两趟地铁。我手上没有哪一条是原因的信息——那部分要你说。'),
+          boundary(b.confidence),
+          ask
+        ]),
+        evidence: ev,
+        basis: b,
+        tags: ['倾听']
+      };
     }
   };
 
@@ -177,7 +320,7 @@
   /**
    * 发起一次回应。
    * @param {{message: string, summary: Object}} request 只接受这两项
-   * @returns {Promise<{text:string, tags:string[], crisis:boolean, resources:Array}>}
+   * @returns {Promise<{text:string, layers:Object, tags:string[], crisis:boolean, resources:Array}>}
    */
   function generateReply(request) {
     var req = request || {};
@@ -207,11 +350,23 @@
     if (!intent && text.length === 0) intent = 'greeting';
 
     var maker = REPLIES[intent] || REPLIES.fallback;
-    var out = maker(payload.summary);
-    out.crisis = false;
-    out.resources = null;
-    out.intent = intent || 'fallback';
-    out.payload = payload;
+    var spec = maker(payload.summary);
+
+    // 上一版被当事人推翻过的解释，在新一版里先承认、再绕开
+    var revised = MH.xai.revisionNote();
+    if (revised) spec.long = revised + '\n\n' + spec.long;
+
+    var ex = MH.xai.compose(spec, { level: MH.xai.defaultLevel() });
+
+    var out = {
+      text: ex.text,
+      layers: ex,
+      tags: ex.tags,
+      crisis: false,
+      resources: null,
+      intent: intent || 'fallback',
+      payload: payload
+    };
 
     // 模拟一次本地服务往返，界面上会显示"服务处理中"
     return new Promise(function (resolve) {
@@ -245,39 +400,70 @@
 
     var stats = payload.facts.filter(function (f) { return f.type === 'stat'; });
     var quotes = payload.facts.filter(function (f) { return f.type === 'quote'; });
-    var lines = [];
+    var memos = payload.facts.filter(function (f) { return f.type === 'memory'; });
+    var found = stats.length + quotes.length;
 
-    lines.push('基于本机检索与统计生成，未联网、未调用任何外部模型。');
+    /* ---- 三档：短 = 一句话结论，中 = 要点，长 = 证据 + 推理边界 ---- */
 
+    var short = found
+      ? (stats.length
+        ? stats[0].text.replace(/^（[^）]*）\s*/, '')
+        : '找到 ' + quotes.length + ' 段相关原文，但没有可直接计算的数值列。')
+      : '在选中的来源里没有找到与这个问题相关的证据。';
+
+    var mediumLines = ['基于本机检索与统计生成，未联网、未调用任何外部模型。'];
     if (stats.length) {
-      lines.push('');
-      stats.forEach(function (s) { lines.push('· ' + s.text); });
-    } else {
-      lines.push('');
-      lines.push('· 选中的来源里没有能直接计算的数值列，下面给出检索到的原文片段。');
+      mediumLines.push('');
+      stats.forEach(function (s) { mediumLines.push('· ' + s.text); });
+    } else if (quotes.length) {
+      mediumLines.push('');
+      mediumLines.push('· 选中的来源里没有能直接计算的数值列，下面给出检索到的原文片段。');
+    }
+    if (memos.length) {
+      mediumLines.push('');
+      mediumLines.push('你之前问过相关的，可以连起来看：');
+      memos.forEach(function (m) { mediumLines.push('· ' + m.text + ' —— ' + m.source); });
+    }
+    if (!found) {
+      mediumLines.push('');
+      mediumLines.push('没能在选中的来源里找到与这个问题相关的证据。可以试试：换成更具体的关键词、勾选更多数据源，或在「补充说明」里告诉我每一列分别代表什么。');
     }
 
+    var longLines = mediumLines.slice();
     if (quotes.length) {
-      lines.push('');
-      lines.push('相关原文片段：');
+      longLines.push('');
+      longLines.push('相关原文片段：');
       quotes.forEach(function (q, i) {
-        lines.push((i + 1) + '. 「' + q.text + '」 —— ' + q.source);
+        longLines.push((i + 1) + '. 「' + q.text + '」 —— ' + q.source);
       });
     }
-
-    lines.push('');
-    if (!stats.length && !quotes.length) {
-      lines.push('没能在选中的来源里找到与这个问题相关的证据。可以试试：换成更具体的关键词、勾选更多数据源，或在「补充说明」里告诉我每一列分别代表什么。');
-    } else {
-      lines.push('说明：以上结论只来自你勾选的数据源；数据源没有覆盖到的部分我不会凭空补充。涉及健康的问题不能替代专业判断。');
+    if (found) {
+      longLines.push('');
+      longLines.push('这份回答的推理边界：');
+      longLines.push('· 只取自你勾选的数据源（' + (payload.context.usedSources.slice(0, 3).join('、') || '本次上下文片段') + '），没有覆盖到的部分我不会凭空补。');
+      longLines.push('· 这里给出的是统计量与检索到的原文，不是成因。若出现「X 与 Y 同向」，那指的是在这批数据里同时出现，不等于谁引起谁。');
+      longLines.push('· 涉及健康的部分不代表专业判断；读数异常请找医生，而不是找我复核。');
     }
+
+    var ex = MH.xai.compose({
+      short: short,
+      medium: mediumLines.join('\n'),
+      long: longLines.join('\n'),
+      evidence: found
+        ? stats.map(function (s) { return s.text; })
+          .concat(quotes.slice(0, 3).map(function (q) { return '原文「' + q.text + '」—— ' + q.source; }))
+        : [],
+      basis: null,
+      tags: ['本地检索', '统计推断'].concat(payload.context.usedSources.slice(0, 3))
+    }, { level: MH.xai.defaultLevel() });
 
     return new Promise(function (resolve) {
       setTimeout(function () {
         resolve({
-          text: lines.join('\n'),
+          text: ex.text,
+          layers: ex,
           mode: 'local',
-          tags: ['本地检索', '统计推断'].concat(payload.context.usedSources.slice(0, 3)),
+          tags: ex.tags,
           crisis: false,
           payload: payload
         });
@@ -297,7 +483,7 @@
   function sanitizeFact(f) {
     if (!f || typeof f !== 'object') return { type: 'quote', text: '', source: '' };
     return {
-      type: f.type === 'stat' ? 'stat' : 'quote',
+      type: f.type === 'stat' ? 'stat' : (f.type === 'memory' ? 'memory' : 'quote'),
       text: String(f.text || '').slice(0, 400),
       source: String(f.source || '').slice(0, 120)
     };

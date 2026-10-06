@@ -41,7 +41,7 @@ global.window = global;
 const base = path.join(__dirname, '..', 'js', 'core');
 [
   'util.js', 'crypto.js', 'store.js', 'metrics.js', 'stats.js',
-  'ingest.js', 'retriever.js', 'local-service.js', 'qa.js',
+  'ingest.js', 'retriever.js', 'xai.js', 'me.js', 'local-service.js', 'qa.js',
   'models/registry.js', 'models/adapters.js', 'models/manager.js',
   'health-import/zip.js', 'health-import/formats.js',
   'health-import/vendors.js', 'health-import/pipeline.js'

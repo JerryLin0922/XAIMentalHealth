@@ -16,6 +16,7 @@
 | 上传文件  | `FileReader` 本地读取，从不上传；默认**仅本次会话**（内存态，刷新即消失），只有显式勾选「保存到本机」才写入 localStorage，且有 600k 字符预算 |
 | 第三方数据 | 「导入」页的文件同样只进内存：解析、清洗、去重全在本机完成，**原始表格一行都不落盘**；只有转换后的四项指标（与可选的备注）会写进记录                     |
 | 问答上下文 | 内置「健康记录」来源只以 14 天聚合摘要参与上下文；用户自己上传的文件按勾选范围参与                                              |
+| `.me` 人格与记忆 | 五大人格与全部问答记忆只写本机 localStorage；命中危机词的那一轮**不写入记忆、不参与人格推断**；两个开关可随时关掉 |
 | 云端模型  | 默认关闭。开启后由浏览器直连服务商，不经过任何中间服务器；密钥默认仅本次会话，勾选保存才落盘且需重新验证密码；备份导出不含密钥；危机信号强制本地                 |
 | 本地服务  | 跑在页面进程内的规则引擎（`local://moodhub/companion`），不是云端接口                                         |
 | 口令    | 用 PBKDF2-SHA256 + 随机盐派生校验，口令本身与明文都不落盘；它锁的是这台设备上的访问入口                                     |
@@ -42,12 +43,14 @@ node serve.cjs                  # http://localhost:5173
 回归测试（不需要浏览器）：
 
 ```bash
-node tests/run-all.cjs     # 一次跑完下面四个套件（推荐；CI 也用它，失败退出码非 0）
+node tests/run-all.cjs     # 一次跑完下面全部套件（推荐；CI 也用它，失败退出码非 0）
 
 node tests/smoke.cjs       # 核心层 131 项：口令派生、表单校验、统计聚合、检索、问答、模型路由与降级、第三方导入（ZIP/XLSX 解析、来源识别、清洗去重、冲突策略）
 node tests/dom-models.cjs  # 视图层 54 项：用极简 DOM 桩跑真实的模型页，验证分区切换、筛选排序、详情、新增 / 编辑 / 删除 / 启停 / 密钥残留
 node tests/dom-import.cjs  # 视图层 31 项：跑真实的导入页，验证选文件 → 解析 → 改映射 → 导入 → 撤销 → 跳记录整条链路
 node tests/import-analytics.cjs  # 导入 + 分析单测 75 项：虚拟模板数据导入（正常 / 空 / 格式错误 / 缺失字段）、统计聚合（均值 / 极值 / 趋势 / 分类）、边界（6 万行超大 / 重复 / 并发 / 撤销）、分析稳定性与异常分支
+node tests/me.cjs          # .me 层 67 项：五大人格信号抽取与收敛、记忆写入 / 召回 / 上限、与问答的闭环集成、导出导入往返
+node tests/dom-qa.cjs      # 问答页 19 项：跑真实的问答页，验证 .me 面板渲染、开关联动、提问后回写与刷新、导出与清空
 ```
 
 静态部署：把整个 `moodhub-web/` 目录丢到任意静态托管（GitHub Pages / Nginx / OSS）即可，无需构建步骤。
@@ -135,6 +138,7 @@ moodhub-web/
 - **上下文整合**：来源切成 ~600 字的块 → BM25（中文按字 + 二元组、英文按词）检索出 Top-K 证据，同一来源最多取 2 块以保证多来源均衡 → 在字符预算（6k / 12k / 24k 可调）内与「补充说明」拼装成上下文
 - **响应生成**：除了引用原文，还会对表格列做真实的数值计算（平均 / 最高 / 最低 / 最近 / 趋势 / 条数），答案里明确写出列名与样本数；证据带来源名与相关度，可展开查看本次实际组装的上下文
 - **持久化**：来源默认「仅本次会话」（只在内存里，刷新即消失），勾选「保存到本机」才写入 localStorage，并有 600k 字符总预算保护；命中危机词时不做分析，直接转求助通道
+- **记住你（`.me`）**：每一轮问答结束都会自动写进本机记忆；下次提问时按**相关度 + 新鲜度**召回最多 8 轮，作为「历史对话记忆」进入上下文，本地引擎会在回答里显式引用；同时用你的提问与记录形态维护一份**五大人格（OCEAN）**画像，用于调整语气与侧重。页面上的「我的 · .me」面板可看人格条、最近记忆，可导出 / 导入 / 清空。完整设计见 [docs/me-profile-spec.md](docs/me-profile-spec.md)
 
 ### 6. 陪伴（树洞）
 
@@ -208,6 +212,7 @@ moodhub-web/
 │   │   ├── charts.js       手写 SVG 折线图 / 迷你趋势线（无图表库）
 │   │   ├── ingest.js       文件摄入与解析（CSV / TSV / JSON / 文本）
 │   │   ├── retriever.js    分块 + BM25 检索 + 预算内上下文组装
+│   │   ├── me.js           .me 层：五大人格（OCEAN）推断 + 问答记忆召回与回写
 │   │   ├── health-import/  第三方健康数据导入（详见 docs/health-import-spec.md）
 │   │   │   ├── zip.js      极简 ZIP 容器 + XLSX 读取（含纯 JS DEFLATE 解压）
 │   │   │   ├── formats.js  CSV / JSON / XLSX / Apple 健康 XML / ZIP → 统一表格
@@ -224,15 +229,23 @@ moodhub-web/
 │   │   ├── dashboard.js    指标卡 + 趋势图 + 最近记录
 │   │   ├── records.js      筛选排序列表 + 编辑弹窗
 │   │   ├── import.js       第三方数据导入向导（五步）
-│   │   ├── qa.js           智能问答：上传 / 选源 / 提问 / 回答 / 引用
+│   │   ├── qa.js           智能问答：上传 / 选源 / 提问 / 回答 / 引用 / 我的 · .me
 │   │   ├── companion.js    对话与传出内容自查
 │   │   └── settings.js     账户、安全、数据、外观
 │   └── app.js              路由、解锁锁定、空闲锁定、重新验证、危机卡
+├── .me/                     【私密】人格画像 + 全部问答记忆（.gitignore 保护，详见 .me/README.md）
+│   ├── personality.json     五大人格（OCEAN）：分数 / 置信度 / 样本 / 证据
+│   ├── profile.json         用户画像：称呼、常问指标
+│   └── memory/              index.json 索引 + turns.jsonl 逐轮问答
+├── tools/
+│   └── me-sync.cjs          .me 目录 ↔ 浏览器导出 的同步脚本（浏览器不写磁盘）
 ├── docs/models-page-spec.md 「模型」页设计说明（目标 / 结构 / 交互 / 验收 / 边界）
 ├── docs/health-import-spec.md 「第三方数据导入」设计说明（管线 / 字段映射 / 清洗规则 / 错误码 / 扩展）
+├── docs/me-profile-spec.md  「.me 人格与记忆」设计说明（OCEAN 推断 / 记忆召回 / 边界与开关）
 ├── tests/smoke.cjs          核心层冒烟测试（node tests/smoke.cjs）
 ├── tests/dom-models.cjs     模型页 DOM 级测试（node tests/dom-models.cjs）
 ├── tests/dom-import.cjs     导入页 DOM 级测试（node tests/dom-import.cjs）
+├── tests/me.cjs             .me 层测试（node tests/me.cjs）
 ├── serve.cjs                本地预览静态服务（node serve.cjs）
 └── README.md
 ```

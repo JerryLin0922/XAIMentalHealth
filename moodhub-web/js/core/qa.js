@@ -252,14 +252,29 @@
       });
     }
 
-    // 2) 检索证据
+    // 2) .me：历史对话记忆 + 用户人格画像（两个开关互相独立，默认都开）
+    var me = MH.me || null;
+    var meOpts = me ? me.settings() : { useMemory: false, usePersona: false, memoryTurns: 3 };
+    // 记忆最多占用预算的 25%，保证证据块仍然拿得到大部分空间
+    var memCap = Math.max(400, Math.min(me ? me.MEMORY_MAX_CHARS : 1500, Math.round(budget * 0.25)));
+    var mem = (me && meOpts.useMemory)
+      ? me.memory.context(question, meOpts.memoryTurns, memCap)
+      : { text: '', turns: [], charCount: 0 };
+    var personaText = (me && meOpts.usePersona) ? me.personality.describeText() : '';
+    var history = [];
+    mem.turns.forEach(function (t) {
+      history.push({ role: 'user', content: t.question });
+      if (t.answer) history.push({ role: 'assistant', content: t.answer });
+    });
+
+    // 3) 检索证据
     var query = question + (prompt ? ' ' + prompt : '');
     var index = MH.retriever.buildIndex(docs.map(function (d) {
       return { id: d.id, name: d.name, text: String(d.text).slice(0, FILE_TEXT_LIMIT) };
     }));
     var hits = MH.retriever.search(index, query, topK);
 
-    // 3) 结构化数值计算（对所有表格型来源）
+    // 4) 结构化数值计算（对所有表格型来源）
     var intent = detectIntent(question);
     var facts = [];
     docs.forEach(function (d) {
@@ -267,7 +282,7 @@
       if (a) facts.push({ type: 'stat', text: describeStat(a, intent), source: d.name });
     });
 
-    // 4) 证据引用
+    // 5) 证据引用
     var citations = hits.map(function (h) {
       return {
         sourceName: h.chunk.sourceName,
@@ -280,24 +295,37 @@
       facts.push({ type: 'quote', text: c.quote, source: c.sourceName });
     });
 
-    // 5) 组装上下文
+    // 6) 历史记忆作为"你已经问过"的事实参与回答，本地引擎也会显式引用
+    (mem.turns || []).forEach(function (t) {
+      facts.push({
+        type: 'memory',
+        text: t.question + ' → ' + t.answer,
+        source: '历史对话（' + U.toISODate(new Date(t.at)) + '）'
+      });
+    });
+
+    // 7) 组装上下文
     var ctx = MH.retriever.assemble({
       prompt: prompt,
+      memoryText: mem.text,
+      personaText: personaText,
       blocks: hits,
       budget: budget
     });
 
-    // 6) 交给模型管理器（本地引擎或云端，按场景选择）
+    // 8) 交给模型管理器（本地引擎或云端，按场景选择）
     return MH.models.run('qa', {
       question: question,
       customPrompt: prompt,
       intent: intent,
       context: { text: ctx.text, usedSources: ctx.usedSources, charCount: ctx.charCount },
-      facts: facts
+      facts: facts,
+      history: history
     }, { chars: ctx.charCount }).then(function (res) {
-      return {
+      var out = {
         question: question,
         answer: res.text,
+        layers: res.layers || null,          // 同一份答案的短 / 中 / 长三档
         mode: res.privacy === 'on-device' ? 'local' : 'cloud',
         crisis: false,
         intent: intent,
@@ -314,6 +342,31 @@
         resources: res.resources || null,
         at: Date.now()
       };
+
+      // 9) 回写 .me：记忆落库 + 人格/画像更新（失败不影响本次回答）
+      out.me = { usedMemory: mem.turns.length, usedPersona: !!personaText, recorded: false };
+      if (me) {
+        try {
+          var rec = me.record({
+            question: question,
+            answer: res.text,
+            customPrompt: prompt,
+            usedSources: ctx.usedSources,
+            intent: intent,
+            model: out.model,
+            contextChars: ctx.charCount,
+            records: request.records
+          });
+          out.me.recorded = !!rec.recorded;
+          out.me.reason = rec.reason;
+          out.me.memoryCount = rec.memoryCount;
+          out.me.personaUpdated = !!rec.personaUpdated;
+        } catch (e) {
+          out.me.reason = 'ERROR';
+          out.me.error = String(e && e.message ? e.message : e);
+        }
+      }
+      return out;
     });
   }
 

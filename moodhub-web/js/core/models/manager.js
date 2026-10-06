@@ -158,6 +158,10 @@
     });
   }
 
+  function unique(arr) {
+    return arr.filter(function (v, i) { return v && arr.indexOf(v) === i; });
+  }
+
   function fail(err) {
     return {
       code: err && err.code ? err.code : 'UNKNOWN',
@@ -254,9 +258,21 @@
       });
     } catch (e) { preview = null; }
 
+    // 统一经过 XAI 层：断言降调 + 拆出短/中/长三档 + 附请求校正
+    // 本地引擎自带分层；自由文本（云端输出）在这里兜底拆。
+    var text = MH.xai.humanize(r.text);
+    var layers = (r && r.layers) || MH.xai.explainProse(text, {
+      level: MH.xai.defaultLevel()
+    });
+    if (layers) {
+      layers.tags = unique((layers.tags || []).concat(r.tags || [])).slice(0, 10);
+      layers.text = layers.text || MH.xai.flatten(layers, layers.level);
+    }
+
     var out = {
-      text: r.text,
+      text: text,
       tags: r.tags || null,
+      layers: layers || null,
       resources: r.resources || null,
       truncated: !!r.truncated,
       preview: preview,
