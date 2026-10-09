@@ -1,3 +1,6 @@
+> [English](README.en.md) | 中文
+
+
 # XAIMentalHealth
 
 #### 介绍
