@@ -76,10 +76,18 @@ class El {
   click() { this.dispatch('click'); }
   matches(sel) {
     const s = String(sel).trim();
+    // 属性选择器：input[type=checkbox]
+    const attrRe = /\[([\w-]+)(?:=([^\]]+))?\]/g;
+    let am;
+    while ((am = attrRe.exec(s)) !== null) {
+      if (!(am[1] in this.attrs)) return false;
+      const want = (am[2] || '').replace(/^["']|["']$/g, '');
+      if (am[2] && String(this.attrs[am[1]]) !== want) return false;
+    }
     let tag = '', id = '', classes = [];
     const re = /([.#]?)([\w-]+)/g;
     let m;
-    while ((m = re.exec(s)) !== null) {
+    while ((m = re.exec(s.replace(/\[[^\]]*\]/g, '').trim())) !== null) {
       if (m[1] === '#') id = m[2];
       else if (m[1] === '.') classes.push(m[2]);
       else tag = m[2].toUpperCase();
@@ -132,6 +140,18 @@ doc.body = new El('body');
 global.document = doc;
 global.navigator = { userAgent: 'node-test' };
 global.window = global;
+// 只补 URL 缺失的静态方法，**保留真实的 URL 构造函数**。
+// 之前这里直接把 global.URL 整个换成普通对象，导致后续任何 `x instanceof URL`
+// （Node 模块加载器、fs 垫片等内部逻辑）都会抛
+// "Right-hand side of 'instanceof' is not callable"，连带 run-all.cjs 整个失败。
+const realURL = global.URL;
+if (!realURL || typeof realURL.createObjectURL !== 'function') {
+  global.URL.createObjectURL = () => 'blob:test';
+}
+if (!realURL || typeof realURL.revokeObjectURL !== 'function') {
+  global.URL.revokeObjectURL = function () {};
+}
+global.Blob = function (parts) { this.parts = parts; };
 
 const memLS = new Map();
 global.localStorage = {
@@ -144,7 +164,8 @@ global.sessionStorage = global.localStorage;
 const base = path.join(__dirname, '..', 'js', 'core');
 [
   'util.js', 'crypto.js', 'store.js', 'metrics.js', 'stats.js',
-  'ingest.js', 'retriever.js', 'xai.js', 'me.js', 'local-service.js', 'qa.js',
+  // 顺序照抄 index.html：guided.js 在 local-service.js 之后（crisis 委托给它）
+  'ingest.js', 'retriever.js', 'xai.js', 'me.js', 'local-service.js', 'guided.js', 'qa.js',
   'models/registry.js', 'models/adapters.js', 'models/manager.js'
 ].forEach(f => { require(path.join(base, f)); });
 
@@ -232,6 +253,56 @@ const tick = () => new Promise(r => setTimeout(r, 600));
   const last = MH.store.chat.all().slice(-1)[0];
   ok(!!last.layers && last.layers.long.indexOf('放下') >= 0,
     '新一版回复主动承认上一版被推翻，不再原地复述');
+
+  /* ================= 问答页：答案同样三档、同样可校正 ================= */
+
+  require(path.join(__dirname, '..', 'js', 'views', 'qa.js'));
+  const qaRoot = new El('div');
+  ROOTS.add(qaRoot);
+  MH.views.qa.render(qaRoot);
+
+  doc.getElementById('qaQuestion').value = '这两周睡眠与压力有什么变化';
+  doc.getElementById('qaAsk').click();
+  await tick(); await tick();
+
+  const result = doc.getElementById('qaResultHost');
+  ok(result.querySelectorAll('.xai__switch').length === 1, '问答答案也给出短 / 中 / 长三档');
+  ok(result.querySelectorAll('.xai__ask').length === 1, '问答答案同样以「征求校正」收尾');
+  const qaTurn = MH.store.qa.all().slice(-1)[0];
+  ok(!!qaTurn.layers && !!qaTurn.layers.short && !!qaTurn.layers.long, '问答的三档一并入库');
+
+  const qaFb = result.querySelectorAll('.xai__fb')[0];
+  const qaReject = qaFb.children.filter(c => c.textContent === '不符合')[0];
+  ok(!!qaReject, '问答答案提供「不符合」按钮');
+  qaReject.click();
+  ok(MH.store.xai.all().some(r => r.target.indexOf('qa:') === 0),
+    '问答里的一次「不符合」也写进本机反馈');
+
+  /* ================= .me：五条人格假设逐条可校正 ================= */
+
+  const meHost = doc.getElementById('qaMeHost');
+  const traits = meHost.querySelectorAll('.me-trait');
+  ok(traits.length === 5 && traits.every(t => t.querySelectorAll('.xai__fb').length === 1),
+    '五条人格假设每一条都带上了自己的评价按钮');
+  ok(meHost.querySelectorAll('.xai__switch').length === 1, '人格卡片顶部提供三档开关');
+  ok(meHost.textContent.indexOf('暂定假设') >= 0, '人格面板自述为「暂定假设」而非定性');
+
+  const hs = MH.me.personality.hypotheses();
+  const picked = hs.slice().sort((a, b) => Math.abs(b.score - 50) - Math.abs(a.score - 50))[0];
+  const idx = hs.indexOf(picked);
+  const traitRow = traits[idx].querySelectorAll('.xai__fb')[0];
+  const traitReject = traitRow.children.filter(c => c.textContent === '不符合')[0];
+  traitReject.click();
+  await tick(0);
+
+  const after = MH.me.personality.hypotheses().filter(h => h.key === picked.key)[0];
+  ok(after.correction && after.correction.verdict === 'reject', '被否的那一条人格读数记住了这次评价');
+  ok(Math.abs(after.score - 50) < Math.abs(picked.score - 50), '被否的人格读数往中性拉回');
+  ok(after.confidence <= picked.confidence, '被否的人格读数置信度下降');
+  ok(MH.store.xai.all().some(r => r.target === 'personality:' + picked.key),
+    '人格校正同样进入本机反馈库');
+  ok(doc.getElementById('qaMeHost').textContent.indexOf('你之前标') >= 0,
+    '界面把当事人之前的评价显示出来');
 
   console.log(fails === 0 ? '\nALL PASS' : '\n' + fails + ' FAILED');
   process.exit(fails ? 1 : 0);

@@ -414,6 +414,66 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .xai__fb .btn.is-on { --btn-bg: var(--accent-soft); --btn-fg: var(--accent); --btn-bd: var(--accent-ring); opacity: 1; cursor: default; }
 .xai__note { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 
+/* ---- 情绪引导卡（Guided Learning）---- */
+
+.gl {
+  --gl-accent: var(--accent);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--gl-accent);
+  border-radius: var(--radius); box-shadow: var(--shadow-1);
+}
+.gl[data-emotion="anger"] { --gl-accent: var(--hr); }
+.gl[data-emotion="grievance"] { --gl-accent: var(--stress); }
+.gl[data-emotion="anxiety"] { --gl-accent: var(--stress); }
+.gl[data-emotion="excitement"] { --gl-accent: var(--mood); }
+.gl[data-emotion="low"] { --gl-accent: var(--sleep); }
+.gl[data-emotion="tired"] { --gl-accent: var(--sleep); }
+.gl[data-emotion="lonely"] { --gl-accent: var(--sleep); }
+.gl[data-emotion="shame"] { --gl-accent: var(--stress); }
+.gl[data-emotion="generic"] { --gl-accent: var(--accent); }
+
+.gl__head { display: flex; align-items: center; gap: 8px; }
+.gl__badge {
+  font-size: 11.5px; padding: 2px 8px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); white-space: nowrap;
+}
+.gl__chip { color: var(--gl-accent); }
+.gl__close { margin-left: auto; min-height: 32px; white-space: nowrap; }
+.gl__name { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.7; }
+.gl__name-alt { font-weight: 400; color: var(--muted); }
+.gl__validate { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.75; }
+.gl__xai { gap: 10px; }
+
+.gl__block { border-top: 1px dashed var(--line); padding-top: 10px; }
+.gl__block-head {
+  background: none; border: 0; padding: 0; margin: 0;
+  font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
+  cursor: pointer; display: flex; gap: 6px; align-items: center; min-height: 32px;
+  text-align: left;
+}
+.gl__block-head:hover { color: var(--text-2); }
+.gl__block-mark { font-size: 10px; line-height: 1; }
+.gl__block-body { display: none; font-size: 13px; line-height: 1.75; color: var(--text-2); }
+.gl__block.is-open .gl__block-body { display: block; }
+.gl__block-body > p { margin: 6px 0 0; }
+.gl__list { margin: 6px 0 0; padding-left: 18px; }
+.gl__list li { margin-top: 4px; }
+.gl__actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+.gl__foot { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; text-align: left; }
+.gl__foot-btn {
+  background: none; border: 0; padding: 0; margin: 0;
+  font-family: inherit; font-size: 12px; color: var(--faint);
+  text-decoration: underline; cursor: pointer; min-height: 32px;
+}
+.gl__foot-btn:hover { color: var(--muted); }
+.gl__note {
+  margin: 0; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-3); border-radius: var(--radius-sm); padding: 8px 10px;
+}
+
 .chat__composer { display: flex; gap: 10px; align-items: flex-end; }
 .chat__composer .input { resize: none; max-height: 140px; }
 
@@ -672,6 +732,9 @@ pre.code { margin: 0; padding: 12px; border-radius: 10px; overflow: auto; max-he
   .main { padding: 18px 14px 24px; }
   .toasts { left: 14px; right: 14px; bottom: 84px; align-items: stretch; }
   .toast { max-width: none; }
+  .chat__composer { flex-wrap: wrap; }
+  .gl { padding: 12px 14px; }
+  .gl__head { flex-wrap: wrap; }
 }
 
 @media (max-width: 620px) {
@@ -688,6 +751,12 @@ pre.code { margin: 0; padding: 12px; border-radius: 10px; overflow: auto; max-he
   .filters { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
   .chat__log { max-height: 48dvh; }
   .bubble { max-width: 90%; }
+  .gl { padding: 12px 14px; }
+  .gl__head { flex-wrap: wrap; }
+  .gl__close { min-height: 40px; }
+  .gl__actions { flex-direction: column; }
+  .gl__actions .btn { width: 100%; min-height: 40px; }
+  .gl__foot-btn { min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,6 +4,8 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const SUITES = [
+  { file: 'i18n.cjs',             desc: '国际化：词典完整性 / 术语一致 / 拼接句规则 / 覆盖率 / 语言持久化' },
+  { file: 'dom-i18n.cjs',         desc: '国际化 DOM 级：切换生效 / 属性翻译 / 保留原文 / 不改结构与类名' },
   { file: 'smoke.cjs',            desc: '核心层：口令 / 校验 / 统计 / 检索 / 问答 / 模型路由 / 导入解析' },
   { file: 'xai.cjs',              desc: '以人为中心的解释层：断言降调 / 三档阅读 / 落到具体经历 / 可纠正假设' },
   { file: 'dom-xai.cjs',          desc: 'XAI 交互：三档切换 / 依据披露 / 符合与否的反馈与下一次改写' },
@@ -11,7 +13,8 @@ const SUITES = [
   { file: 'dom-import.cjs',       desc: '导入页：选文件 → 解析 → 改映射 → 导入 → 撤销 → 跳转' },
   { file: 'import-analytics.cjs', desc: '导入 + 分析：模板数据 / 聚合 / 超大与并发边界 / 异常分支' },
   { file: 'me.cjs',               desc: '.me：五大人格推断 / 问答记忆写入召回上限 / 与问答闭环 / 导入导出' },
-  { file: 'dom-qa.cjs',           desc: '问答页：.me 面板渲染 / 开关联动 / 提问后回写与刷新 / 导出与清空' }
+  { file: 'dom-qa.cjs',           desc: '问答页：.me 面板渲染 / 开关联动 / 提问后回写与刷新 / 导出与清空' },
+  { file: 'dom-guided.cjs',       desc: '情绪引导：识别 / 强度 / 触发 / 频率 / 冷静期 / 渲染 / 交互 / 存储 / 设置页重开' }
 ];
 
 let failedSuites = 0;

@@ -1,0 +1,106 @@
+%% 引导式学习（Guided Learning）关键时序图
+%% 与 docs/guided-learning-design.md §5 同步
+%% 三张图：自动触发 / 手动开启 / 状态机
+
+%% ---------- 1. 自动触发全链路 ----------
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant V as MH.views.companion
+    participant S as MH.store.chat
+    participant G as MH.guided
+    participant LS as MH.localService
+    participant X as MH.xai
+    participant ST as MH.store.guided
+
+    U->>V: 输入「气死了，凭什么最后是我背锅」并发送
+    V->>S: append({role:'me', text})
+    V->>ST: patch({turnsSince: turnsSince + 1})
+    V->>V: paintLog()
+    V->>V: MH.models.run('companion', {message, summary})
+    Note over V: 正常回复流程（与现状完全一致）
+    V->>S: append({role:'ai', text, layers, payload})
+    V->>V: paintLog()
+
+    V->>G: tryAuto({text, turns, now, mode:'auto', basisDays})
+    G->>LS: isCrisis(text)
+    LS-->>G: false
+    G->>G: detect(text) -> {key:'grievance', score:0.65, matched:[...]}
+    G->>ST: state() -> GuidedState
+    G->>G: shouldTrigger(ctx) 按序判定 CRISIS/NO_EMOTION/DISABLED/COOLDOWN/TURNS/INTENSITY/DAILY_LIMIT/SAME_EMOTION/INTERVAL
+    alt ok = true
+        G->>G: build('grievance', ctx) -> GuidedContent
+        G->>X: compose(spec, {level}) -> layers
+        X-->>G: {short, medium, long, evidence, basis, revision, tags}
+        G->>G: buildMessage(key, ctx) -> ChatMessage
+        G->>ST: record({emotion, mode:'auto', outcome:'shown'})
+        G-->>V: {ok:true, message}
+        V->>S: append(message)
+        V->>V: paintLog() -> bubble() 检测到 payload.guided -> guidedCard()
+        V-->>U: 对话流底部出现引导卡
+    else reason = SAME_EMOTION
+        G-->>V: {ok:false, reason:'SAME_EMOTION'}
+        V->>S: append({role:'sys', text: repeatHint()})
+        V->>V: paintLog()
+    else 其它 reason
+        G-->>V: {ok:false, reason}
+        Note over V: 静默，不提示、不追问
+    end
+
+    U->>V: 点「这次先不了」
+    V->>G: decline(emotionKey, 'auto')
+    G->>ST: declineAt = now, declineCount++, history.push
+    V->>V: 卡片替换为一行 .bubble--sys「已跳过这一次的引导。」
+    V->>V: MH.util.toast(跳过提示, 'info', 4200)
+
+%% ---------- 2. 手动开启 ----------
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant V as MH.views.companion
+    participant G as MH.guided
+    participant LS as MH.localService
+    participant X as MH.xai
+    participant ST as MH.store.guided
+    participant APP as MH.app
+
+    U->>V: 点「引导我看看」或输入「/引导」发送
+    V->>V: text === '/引导' || text === '/guided' ? 指令分支 : 按钮分支
+    Note over V: 指令分支：不入正常回复流程、不追加 role:'me' 消息
+    V->>LS: isCrisis(lastUserText || '')
+    alt 命中危机词
+        LS-->>V: true
+        V->>APP: showCrisis()
+        Note over V: 引导不出卡，只出求助资源
+    else 未命中
+        V->>G: tryManual({text, turns, now, mode:'manual', basisDays})
+        G->>G: detect(text) -> null ? emotion = generic : emotion = 命中族
+        G->>G: turns < 2 ? onlyName = true, note = NAME_ONLY
+        G->>G: build(key, ctx) -> GuidedContent
+        G->>X: compose(spec, {level})
+        G->>G: buildMessage(key, ctx)
+        G->>ST: record({emotion, mode:'manual', outcome:'shown'})
+        G-->>V: {ok:true, message}
+        V->>V: MH.store.chat.append(message)
+        V->>V: paintLog()
+        V-->>U: 立即出一张引导卡（不受频率 / 冷静期 / guidedAuto 限制）
+        Note over G,ST: 只「绕过」不「清除」：declineAt 保持不变，明天仍不自动出卡
+    end
+
+    Note over V,ST: 唯一清除冷静期的入口：设置页把自动引导重新打开（enableAuto 清 declineAt 与 declineCount）
+
+%% ---------- 3. 状态机 ----------
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> IDLE: 未命中情绪族 / 强度不足 / 轮次不足 / 频率超限（静默）
+    IDLE --> CRISIS: isCrisis(text) = true
+    CRISIS --> IDLE: 出求助资源，state 不写 history
+    IDLE --> OFFERED: shouldTrigger 返回 OK
+    OFFERED --> ENGAGED: 点「我记下了」
+    OFFERED --> DECLINED: 点「这次先不了」
+    OFFERED --> DISABLED: 点「不再自动引导」
+    OFFERED --> IDLE: 用户无视继续发言（不视为拒绝，不追加引导）
+    ENGAGED --> IDLE: history.outcome = acted，卡片保持可读
+    DECLINED --> IDLE: declineAt 写入，7 天内 shouldTrigger 一律 false
+    DISABLED --> IDLE: prefs.guidedAuto = false，需到设置页才能再开
+    IDLE --> OFFERED: 手动入口（按钮 / 指令），绕过全部频率与冷静期

@@ -37,6 +37,7 @@
 
       <div class="topbar__right">
         <span class="chip" id="userChip"></span>
+        <button class="btn btn--ghost btn--sm" type="button" id="btnLang" title="切换语言 / Switch language" aria-label="切换语言 / Switch language">EN</button>
         <button class="btn btn--ghost btn--sm" type="button" id="btnLock">锁定</button>
       </div>
     </header>
@@ -221,6 +222,8 @@
   <script src="js/core/util.js"></script>
   <script src="js/core/crypto.js"></script>
   <script src="js/core/store.js"></script>
+  <script src="js/core/i18n.js"></script>
+  <script src="i18n/en.js"></script>
   <script src="js/core/metrics.js"></script>
   <script src="js/core/stats.js"></script>
   <script src="js/core/charts.js"></script>
@@ -233,6 +236,8 @@
   <script src="js/core/xai.js"></script>
   <script src="js/core/me.js"></script>
   <script src="js/core/local-service.js"></script>
+  <!-- guided.js 的危机判定委托 MH.localService.isCrisis（单一来源），必须排在 local-service.js 之后 -->
+  <script src="js/core/guided.js"></script>
   <script src="js/core/qa.js"></script>
   <script src="js/core/models/registry.js"></script>
   <script src="js/core/models/adapters.js"></script>

@@ -19,7 +19,8 @@
     mePersonality: NS + 'me.personality',  // .me 五大人格画像
     meProfile: NS + 'me.profile',          // .me 用户画像（称呼 / 常问指标）
     meMemory: NS + 'me.memory',            // .me 用户与 AI 的全部问答记忆
-    feedback: NS + 'xai.feedback'          // 对 AI 解释的校正：哪条读法准、哪条不准（仅本机）
+    feedback: NS + 'xai.feedback',         // 对 AI 解释的校正：哪条读法准、哪条不准（仅本机）
+    guided: NS + 'guided'                  // 情绪引导的频率状态与历史（仅存情绪名，不存原话）
   };
   var SESSION_KEY = NS + 'session';
   var SESSION_MODEL_KEYS = NS + 'models.keys';   // 「仅本次会话」的 API Key
@@ -81,7 +82,8 @@
     meUseMemory: true,       // 问答时是否召回「历史对话记忆」
     meUsePersona: true,      // 问答时是否带上「用户人格画像」
     meMemoryTurns: 3,        // 每次最多召回几轮历史对话
-    xaiLevel: 'medium'       // AI 解释的默认阅读层次：short | medium | long
+    xaiLevel: 'medium',      // AI 解释的默认阅读层次：short | medium | long
+    guidedAuto: true         // 情绪引导的「自动触发」开关（关闭只关自动，手动入口仍可用）
   };
 
   var prefs = {
@@ -352,6 +354,103 @@
       return out;
     },
     clear: function () { lsRemove(K.feedback); }
+  };
+
+  /* ============================ 情绪引导（Guided Learning） ============================
+
+     只保存「什么时候、对哪个情绪族、以什么方式引导过、结果如何」。
+     刻意不存用户原话，也不存任何情绪正文——那些内容本来就在对话记录里，
+     再复制一份进存储既无收益，也与「本地优先、最小落盘」的承诺相悖。 */
+
+  var GUIDED_HISTORY_MAX = 30;
+
+  function guidedDefault() {
+    return {
+      schema: 'moodhub.guided/v1',
+      day: '',            // 频率计数所在自然日（读出来时若不是今天，dayAuto 归零）
+      dayAuto: 0,
+      lastAutoAt: 0,
+      lastEmotion: '',
+      lastEmotionAt: 0,
+      declineAt: 0,
+      declineCount: 0,
+      turnsSince: 99,     // 距上次引导的用户发言轮次；初始给足，避免首次被间隔挡住
+      alias: {},          // P1：用户自选的情绪称呼
+      history: []
+    };
+  }
+
+  var guided = {
+    /**
+     * 读状态：校验 schema → 自然日滚动 → 补齐缺失字段。
+     * 任何异常都返回默认态，绝不抛错（隐私模式 / 小程序冷启动）。
+     */
+    state: function () {
+      try {
+        var s = readJSON(K.guided, null);
+        if (!s || typeof s !== 'object' || s.schema !== 'moodhub.guided/v1') s = {};
+        var out = Object.assign(guidedDefault(), s);
+        out.alias = (s.alias && typeof s.alias === 'object') ? s.alias : {};
+        out.history = Array.isArray(s.history) ? s.history.slice(0, GUIDED_HISTORY_MAX) : [];
+        var today = MH.util.todayISO();
+        if (out.day !== today) { out.day = today; out.dayAuto = 0; }
+        return out;
+      } catch (e) {
+        return guidedDefault();
+      }
+    },
+
+    patch: function (p) {
+      var next = Object.assign(guided.state(), p || {});
+      writeJSON(K.guided, next);
+      return next;
+    },
+
+    /**
+     * 记一次引导结果。只有「自动 + 已展示」才占用每日额度；
+     * 点「我记下了」（outcome:'acted'）时把 declineCount 复位，让阈值回落。
+     * @param {{emotion:string, mode:'auto'|'manual',
+     *          outcome:'shown'|'acted'|'rejected'|'declined', at?:number}} entry
+     */
+    record: function (entry) {
+      var e = entry || {};
+      var s = guided.state();
+      var now = Number(e.at) || Date.now();
+      var mode = e.mode === 'manual' ? 'manual' : 'auto';
+      var outcome = ['shown', 'acted', 'rejected', 'declined'].indexOf(e.outcome) >= 0 ? e.outcome : 'shown';
+      var key = String(e.emotion || s.lastEmotion || '');
+
+      s.lastEmotion = key;
+      s.lastEmotionAt = now;
+      s.turnsSince = 0;
+      if (mode === 'auto' && outcome === 'shown') {
+        s.dayAuto = Number(s.dayAuto) + 1;
+        s.lastAutoAt = now;
+      }
+      if (outcome === 'acted') s.declineCount = 0;
+
+      s.history.push({ at: now, emotion: key, mode: mode, outcome: outcome });
+      if (s.history.length > GUIDED_HISTORY_MAX) s.history = s.history.slice(-GUIDED_HISTORY_MAX);
+      return guided.patch(s);
+    },
+
+    /** 「这次先不了」：写 declineAt 与 declineCount，进入 7 天冷静期。 */
+    decline: function (emotionKey, mode) {
+      var s = guided.state();
+      var now = Date.now();
+      s.declineAt = now;
+      s.declineCount = Number(s.declineCount) + 1;
+      s.history.push({
+        at: now,
+        emotion: String(emotionKey || s.lastEmotion || ''),
+        mode: mode === 'manual' ? 'manual' : 'auto',
+        outcome: 'declined'
+      });
+      if (s.history.length > GUIDED_HISTORY_MAX) s.history = s.history.slice(-GUIDED_HISTORY_MAX);
+      return guided.patch(s);
+    },
+
+    reset: function () { lsRemove(K.guided); }
   };
 
   /* ============================ .me（人格 / 画像 / 记忆） ============================ */
@@ -734,6 +833,8 @@
       },
       // AI 解释的校正记录：让下一版知道哪些读法已经被否掉
       xaiFeedback: xai.all(),
+      // 情绪引导的频率状态与历史（只有情绪名与结果，没有任何原话）
+      guided: guided.state(),
       // 导出模型连接配置，但绝不导出 API Key
       models: (function () {
         var s = readModelState();
@@ -774,6 +875,7 @@
       if (Array.isArray(payload.me.memory)) writeJSON(K.meMemory, payload.me.memory);
     }
     if (Array.isArray(payload.xaiFeedback)) writeJSON(K.feedback, payload.xaiFeedback.slice(-200));
+    if (payload.guided && typeof payload.guided === 'object') writeJSON(K.guided, payload.guided);
     if (payload.models && typeof payload.models === 'object') {
       var ms = readModelState();
       ms.active = Object.assign({}, DEFAULT_MODEL_STATE.active, payload.models.active || {});
@@ -794,7 +896,7 @@
   function storageUsage() {
     var bytes = 0;
     [K.records, K.chat, K.prefs, K.auth, K.trust, K.sources, K.qa, K.imports,
-      K.mePersonality, K.meProfile, K.meMemory, K.feedback].forEach(function (k) {
+      K.mePersonality, K.meProfile, K.meMemory, K.feedback, K.guided].forEach(function (k) {
       var v = lsGet(k);
       if (v) bytes += v.length + k.length;
     });
@@ -812,6 +914,7 @@
     me: me,
     imports: imports,
     xai: xai,
+    guided: guided,
     models: models,
     auth: auth,
     trust: trust,

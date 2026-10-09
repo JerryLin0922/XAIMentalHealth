@@ -78,6 +78,12 @@
     ]);
     themeSel.value = prefs.theme || 'auto';
 
+    var langSel = el('select', { class: 'input', id: 'setLang' }, [
+      el('option', { value: 'zh-CN', text: '中文' }),
+      el('option', { value: 'en', text: 'English' })
+    ]);
+    langSel.value = (MH.i18n && MH.i18n.current()) || 'zh-CN';
+
     root.appendChild(el('div', { class: 'card section' }, [
       el('div', { class: 'card__head' }, [el('span', { class: 'card__title', text: '安全与外观' })]),
 
@@ -93,6 +99,16 @@
         [idle]),
 
       row('外观主题', '深浅色只影响本机的显示。', [themeSel]),
+
+      row('界面语言', '切换后立即生效，并记住你的选择。未收录的文案保留原文。', [langSel]),
+
+      // 关掉的是「自动触发」，卡片里的「引导我看看」与 /引导 指令仍然随时可用
+      row('情绪引导',
+        '在你说到明显的情绪时，除了正常回应，再给一次结构化的情绪觉察引导：先命名，再读它可能指向的需要，最后留一个问题。它随时可以在卡片里关掉。',
+        [el('label', { class: 'check' }, [
+          el('input', { type: 'checkbox', id: 'setGuidedAuto', checked: prefs.guidedAuto !== false }),
+          el('span', { text: '开启' })
+        ])]),
 
       row('立即锁定', '手动结束本次会话，回到登录页。',
         [el('button', { class: 'btn btn--ghost btn--sm', type: 'button', id: 'setLock', text: '锁定' })])
@@ -199,6 +215,26 @@
       MH.store.prefs.set({ theme: this.value });
       MH.app.applyTheme();
       U.toast('已切换主题', 'ok');
+    });
+
+    var setLang = U.$('#setLang', root);
+    if (setLang) setLang.addEventListener('change', function () {
+      if (MH.i18n) MH.i18n.setLang(this.value);
+    });
+
+    var setGuidedAuto = U.$('#setGuidedAuto', root);
+    if (setGuidedAuto) setGuidedAuto.addEventListener('change', function () {
+      // 走内核而不是直接写 prefs：重新打开＝清冷静期（唯一合法出口，设计文档 §4.8）
+      try {
+        if (this.checked) {
+          if (MH.guided && MH.guided.enableAuto) MH.guided.enableAuto();
+          else MH.store.prefs.set({ guidedAuto: true });
+        } else {
+          if (MH.guided && MH.guided.disableAuto) MH.guided.disableAuto();
+          else MH.store.prefs.set({ guidedAuto: false });
+        }
+      } catch (e) { /* 设置失败不中断设置页 */ }
+      U.toast('已更新情绪引导设置', 'ok');
     });
 
     U.$('#setLock', root).addEventListener('click', function () { MH.app.lock('manual'); });

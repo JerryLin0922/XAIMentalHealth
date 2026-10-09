@@ -1,0 +1,121 @@
+%% 引导式学习（Guided Learning）类图 / 数据结构
+%% 与 docs/guided-learning-design.md §3 §4 同步
+classDiagram
+    class MH_guided {
+        +string SCHEMA
+        +Array EMOTIONS
+        +Object TEMPLATES
+        +Object THRESHOLDS
+        +string CLOSING
+        +string NO_SIGNAL
+        +string NAME_ONLY
+        +normalize(text) string
+        +score(text, key) number
+        +detect(text) DetectResult
+        +quote(text) string
+        +pick(list, seed) any
+        +fill(tpl, vars) string
+        +build(key, ctx) GuidedContent
+        +spec(content, ctx) Object
+        +compose(key, ctx) Object
+        +buildMessage(key, ctx) ChatMessage
+        +shouldTrigger(ctx) TriggerResult
+        +tryAuto(ctx) Object
+        +tryManual(ctx) Object
+        +repeatHint() string
+        +state() GuidedState
+        +patch(p) GuidedState
+        +record(entry) GuidedState
+        +decline(key, mode) GuidedState
+        +disableAuto() void
+        +reset() void
+    }
+    class Emotion {
+        +string key
+        +string name
+        +Array alt
+        +string need
+        +RegExp re
+        +boolean auto
+    }
+    class TemplateGroup {
+        +Array name
+        +Array validate
+        +Array signal
+        +Array questions
+        +Array actions
+    }
+    class GuidedContent {
+        +string schema
+        +Object emotion
+        +string name
+        +string validate
+        +string signal
+        +Array questions
+        +string action
+        +string closing
+        +string note
+        +boolean onlyName
+        +string mode
+        +number at
+        +Array others
+    }
+    class GuidedState {
+        +string schema
+        +string day
+        +number dayAuto
+        +number lastAutoAt
+        +string lastEmotion
+        +number lastEmotionAt
+        +number declineAt
+        +number declineCount
+        +number turnsSince
+        +Object alias
+        +Array history
+    }
+    class TriggerResult {
+        +boolean ok
+        +string reason
+        +DetectResult emotion
+        +number score
+    }
+    class MH_store_guided {
+        +state() GuidedState
+        +patch(p) GuidedState
+        +record(entry) GuidedState
+        +decline(key, mode) GuidedState
+        +reset() void
+    }
+    class MH_xai {
+        +compose(spec, opts) Object
+        +basis(d, w) Object
+        +strength(c) Object
+        +defaultLevel() string
+        +humanize(t) string
+        +audit(t) Object
+    }
+    class MH_store_chat {
+        +append(msg) ChatMessage
+        +all() Array
+        +clear() void
+    }
+    class MH_views_companion {
+        +render(root) void
+        -bubble(msg) Node
+        -xaiBody(msg, opts) Node
+        -guidedCard(msg) Node
+        -maybeGuide(text) void
+        -manualGuide() void
+        -declineGuide(msg) void
+        -disableGuide() void
+    }
+
+    MH_guided "1" o-- "9" Emotion : EMOTIONS
+    MH_guided "1" o-- "9" TemplateGroup : TEMPLATES
+    MH_guided ..> GuidedContent : build
+    MH_guided ..> TriggerResult : shouldTrigger
+    MH_guided ..> MH_store_guided : state/record/decline
+    MH_guided ..> MH_xai : compose/basis/strength
+    MH_views_companion ..> MH_guided : tryAuto/tryManual
+    MH_views_companion ..> MH_store_chat : append
+    MH_views_companion ..> GuidedContent : 渲染 payload.guided
